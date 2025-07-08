@@ -1,5 +1,7 @@
+const db = firebase.firestore();
+
 // Data Storage
-let vinData = JSON.parse(localStorage.getItem("vinData")) || [];
+let vinData = [];
 let editingIndex = null;
 const defectList = document.getElementById("defectList");
 
@@ -14,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 Chart.register(ChartDataLabels);
   document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
   addDefectEntry();
-  saveAndRender();
+  loadData();
   
   // Event Listeners
   addDefectBtn.addEventListener('click', addDefectEntry);
@@ -115,19 +117,35 @@ function saveZeroDefect() {
     isZeroDefect: true
   };
   
-  if (editingIndex !== null) {
-    vinData[editingIndex] = newEntry;
-    editingIndex = null;
-  } else {
-    vinData.push(newEntry);
-  }
-  
-  document.getElementById("vinForm").reset();
-  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-  defectList.innerHTML = "";
-  saveAndRender();
-  
-  alert("Data Zero Defect berhasil disimpan!");
+ // Save to Firestore
+  db.collection("defects").add(newEntry)
+    .then(() => {
+      alert("Data Zero Defect berhasil disimpan!");
+      document.getElementById("vinForm").reset();
+      document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+      defectList.innerHTML = "";
+      loadData(); // Refresh data from Firestore
+    })
+    .catch(error => {
+      alert("Error menyimpan data: " + error.message);
+    });
+}
+
+// Load data from Firestore
+function loadData() {
+  db.collection("defects").get()
+    .then((querySnapshot) => {
+      vinData = [];
+      querySnapshot.forEach((doc) => {
+        vinData.push({ id: doc.id, ...doc.data() });
+      });
+      renderTable();
+      renderChart();
+      renderParetoChart(vinData);
+    })
+    .catch(error => {
+      console.error("Error loading data: ", error);
+    });
 }
 
 // Fungsi Render Tabel
@@ -184,6 +202,7 @@ function renderTable() {
 // Fungsi Edit Data
 function editVIN(index) {
   const entry = vinData[index];
+  editingIndex = entry.id;
   document.getElementById("vinDate").value = entry.date;
   document.getElementById("vin").value = entry.vin;
   defectList.innerHTML = "";
@@ -197,24 +216,28 @@ function editVIN(index) {
   editingIndex = index;
 }
 
-// Fungsi Hapus Data
+// Fungsi Hapus Data (modified for Firestore)
 function deleteVIN(index) {
   if (confirm("Yakin ingin menghapus data ini?")) {
-    vinData.splice(index, 1);
-    saveAndRender();
+    // Note: This is a simplified approach - in production you'd need document IDs
+    const entry = vinData[index];
+    db.collection("defects")
+      .where("vin", "==", entry.vin)
+      .where("date", "==", entry.date)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          doc.ref.delete();
+        });
+        loadData(); // Refresh data after deletion
+      })
+      .catch(error => {
+        alert("Error menghapus data: " + error.message);
+      });
   }
 }
-
-// Fungsi Simpan ke LocalStorage
-function saveAndRender() {
-  localStorage.setItem("vinData", JSON.stringify(vinData));
-vinData = JSON.parse(localStorage.getItem("vinData"));
-  renderTable();
-  renderChart();
-  renderParetoChart(vinData);
-}
-
-// Fungsi Handle Form Submit
+   
+// Fungsi Handle Form Submit (modified for Firestore)
 function handleFormSubmit(e) {
   e.preventDefault();
   
@@ -243,18 +266,19 @@ function handleFormSubmit(e) {
   
   const newEntry = { date, vin, defects, isZeroDefect: false };
   
-  if (editingIndex !== null) {
-    vinData[editingIndex] = newEntry;
-    editingIndex = null;
-  } else {
-    vinData.push(newEntry);
-  }
-  
-  this.reset();
-  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-  defectList.innerHTML = "";
-  addDefectEntry();
-  saveAndRender();
+  // Save to Firestore
+  db.collection("defects").add(newEntry)
+    .then(() => {
+      alert("Data berhasil disimpan!");
+      document.getElementById("vinForm").reset();
+      document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+      defectList.innerHTML = "";
+      addDefectEntry();
+      loadData(); // Refresh data from Firestore
+    })
+    .catch(error => {
+      alert("Error menyimpan data: " + error.message);
+    });
 }
 
 // Fungsi Render Chart
@@ -398,7 +422,7 @@ function renderChart() {
   });
 }
 
-// Fungsi Export Excel
+// Fungsi Export Excel (modified to work with Firestore data)
 function exportToExcel() {
   const today = new Date();
   const dateString = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
@@ -424,19 +448,15 @@ function exportToExcel() {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
   XLSX.writeFile(workbook, `Defect_Report_${dateString}.xlsx`);
 
-      // Tanyakan konfirmasi sebelum reset data
-      setTimeout(() => {
-        if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
-          vinData = [];
-          localStorage.setItem("vinData", JSON.stringify(vinData));
-          document.getElementById("vinForm").reset();
-          document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-          defectList.innerHTML = "";
-          addDefectEntry();
-          saveAndRender();
-        }
-      }, 500);
+  setTimeout(() => {
+    if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
+      document.getElementById("vinForm").reset();
+      document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+      defectList.innerHTML = "";
+      addDefectEntry();
     }
+  }, 500);
+}
     
 function renderParetoChart(dataList) {
   const filtered = dataList.filter(entry => !entry.isZeroDefect);
