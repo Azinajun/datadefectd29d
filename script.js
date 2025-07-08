@@ -1,80 +1,7 @@
-<script>
-    // Tampilkan loading indicator
-    document.getElementById('loadingIndicator').classList.add('active');
-
-    // Konfigurasi Firebase (gunakan data dari Firebase Console Anda)
-    const firebaseConfig = {
-  apiKey: "AIzaSyBS6uwZXhh2nVMaVtiyxDnI93VbbhjDoy0",
-  authDomain: "datadefectd29d-a8b38.firebaseapp.com",
-  projectId: "datadefectd29d-a8b38",
-  storageBucket: "datadefectd29d-a8b38.firebasestorage.app",
-  messagingSenderId: "713752004677",
-  appId: "1:713752004677:web:2e819fe45b63d7ae50fb2c",
-  measurementId: "G-BQCJXJZNZW
-    };
-
-    // Inisialisasi Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
 // Data Storage
 let vinData = JSON.parse(localStorage.getItem("vinData")) || [];
 let editingIndex = null;
 const defectList = document.getElementById("defectList");
-
-    // Fungsi untuk menyimpan data ke Firebase
-    function saveToFirebase() {
-      return database.ref('vinData').set(vinData)
-        .then(() => console.log("Data tersimpan di Firebase"))
-        .catch(error => {
-          console.error("Error menyimpan ke Firebase:", error);
-          // Simpan ke localStorage sebagai fallback
-          localStorage.setItem("vinData", JSON.stringify(vinData));
-        });
-    }
-
-    // Fungsi untuk memuat data dari Firebase
-    function loadFromFirebase() {
-      database.ref('vinData').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          vinData = data;
-          // Tambahkan flag isZeroDefect untuk data lama yang belum memilikinya
-          vinData = vinData.map(entry => {
-            if (!entry.hasOwnProperty('isZeroDefect') && 
-                entry.defects.some(d => d.category === "Zero Defect")) {
-              entry.isZeroDefect = true;
-            }
-            return entry;
-          });
-          renderTable();
-          renderChart();
-        }
-
-// Sembunyikan loading indicator setelah data dimuat
-        document.getElementById('loadingIndicator').classList.remove('active');
-      }, (error) => {
-        console.error("Error memuat dari Firebase:", error);
-        // Coba load dari localStorage jika Firebase gagal
-        const localData = localStorage.getItem("vinData");
-        if (localData) {
-          vinData = JSON.parse(localData);
-          renderTable();
-          renderChart();
-        }
-
-   // Fungsi Utama untuk menyimpan dan render
-    function saveAndRender() {
-      // Simpan ke localStorage sebagai fallback
-      localStorage.setItem("vinData", JSON.stringify(vinData));
-      
-      // Simpan ke Firebase
-      saveToFirebase()
-        .then(() => {
-          renderTable();
-          renderChart();
-        });
-    }
 
 // DOM Elements
 const addDefectBtn = document.getElementById("addDefectBtn");
@@ -260,7 +187,8 @@ function editVIN(index) {
   document.getElementById("vinDate").value = entry.date;
   document.getElementById("vin").value = entry.vin;
   defectList.innerHTML = "";
-    if (entry.isZeroDefect) {
+  
+  if (entry.isZeroDefect) {
     saveZeroDefect();
   } else {
     entry.defects.forEach(addDefectEntry);
@@ -275,6 +203,15 @@ function deleteVIN(index) {
     vinData.splice(index, 1);
     saveAndRender();
   }
+}
+
+// Fungsi Simpan ke LocalStorage
+function saveAndRender() {
+  localStorage.setItem("vinData", JSON.stringify(vinData));
+vinData = JSON.parse(localStorage.getItem("vinData"));
+  renderTable();
+  renderChart();
+  renderParetoChart(vinData);
 }
 
 // Fungsi Handle Form Submit
@@ -492,7 +429,6 @@ function exportToExcel() {
         if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
           vinData = [];
           localStorage.setItem("vinData", JSON.stringify(vinData));
-          saveToFirebase();
           document.getElementById("vinForm").reset();
           document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
           defectList.innerHTML = "";
@@ -501,12 +437,7 @@ function exportToExcel() {
         }
       }, 500);
     }
-
- // Inisialisasi Awal
-    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-    addDefectEntry();
-    loadFromFirebase();
-
+    
 function renderParetoChart(dataList) {
   const filtered = dataList.filter(entry => !entry.isZeroDefect);
   const combinedCounts = {};
