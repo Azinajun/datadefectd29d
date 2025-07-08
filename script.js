@@ -454,41 +454,55 @@ function renderChart() {
   });
 }
 
-// Fungsi Export Excel
-function exportToExcel() {
-  const today = new Date();
-  const dateString = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+// Fungsi Export Excel yang sudah diperbaiki
+async function exportToExcel() {
+  try {
+    const today = new Date();
+    const dateString = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
 
-  const flatData = [];
-  vinData.forEach(item => {
-    item.defects.forEach(def => {
-      flatData.push({
-        "Tanggal": item.date,
-        "VIN": item.vin,
-        "Kategori": def.category,
-        "Area": def.area,
-        "Deskripsi": def.description,
-        "PIC": def.pic,
-        "Heavy Repair": def.heavyRepair,
-        "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
+    // Ambil data terbaru dari Firestore untuk memastikan data yang diexport up-to-date
+    const snapshot = await vinCollection.get();
+    const currentData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const flatData = [];
+    currentData.forEach(item => {
+      item.defects.forEach(def => {
+        flatData.push({
+          "Tanggal": item.date,
+          "VIN": item.vin,
+          "Kategori": def.category,
+          "Area": def.area,
+          "Deskripsi": def.description,
+          "PIC": def.pic,
+          "Heavy Repair": def.heavyRepair,
+          "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
+        });
       });
     });
-  });
 
-  const worksheet = XLSX.utils.json_to_sheet(flatData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
-  XLSX.writeFile(workbook, `Defect_Report_${dateString}.xlsx`);
+    const worksheet = XLSX.utils.json_to_sheet(flatData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
+    XLSX.writeFile(workbook, `Defect_Report_${dateString}.xlsx`);
 
-  // Tanyakan konfirmasi sebelum reset data
-  setTimeout(() => {
-    if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
-      document.getElementById("vinForm").reset();
-      document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-      defectList.innerHTML = "";
-      addDefectEntry();
+    // Tampilkan konfirmasi setelah export selesai
+    const shouldReset = confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?");
+    if (shouldReset) {
+      resetForm();
     }
-  }, 500);
+  } catch (error) {
+    console.error("Error exporting data: ", error);
+    alert("Gagal mengekspor data!");
+  }
+}
+
+// Fungsi untuk mereset form
+function resetForm() {
+  document.getElementById("vinForm").reset();
+  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+  defectList.innerHTML = "";
+  addDefectEntry();
+  editingId = null;
 }
 
 // Fungsi Render Pareto Chart
