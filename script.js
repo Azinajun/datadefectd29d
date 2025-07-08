@@ -454,55 +454,87 @@ function renderChart() {
   });
 }
 
-// Fungsi Export Excel yang sudah diperbaiki
+// Fungsi Export Excel yang sudah diuji
 async function exportToExcel() {
-  try {
-    const today = new Date();
-    const dateString = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+  // Tampilkan loading indicator
+  const exportBtn = document.getElementById("exportBtn");
+  const originalText = exportBtn.innerHTML;
+  exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+  exportBtn.disabled = true;
 
-    // Ambil data terbaru dari Firestore untuk memastikan data yang diexport up-to-date
-    const snapshot = await vinCollection.get();
+  try {
+    // Ambil data langsung dari Firestore (tidak dari cache)
+    const snapshot = await vinCollection.get({ source: "server" });
     const currentData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const flatData = [];
-    currentData.forEach(item => {
-      item.defects.forEach(def => {
-        flatData.push({
-          "Tanggal": item.date,
-          "VIN": item.vin,
-          "Kategori": def.category,
-          "Area": def.area,
-          "Deskripsi": def.description,
-          "PIC": def.pic,
-          "Heavy Repair": def.heavyRepair,
-          "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
-        });
-      });
-    });
+    // Siapkan data untuk Excel
+    const flatData = currentData.flatMap(item => 
+      item.defects.map(def => ({
+        "Tanggal": item.date,
+        "VIN": item.vin,
+        "Kategori": def.category,
+        "Area": def.area,
+        "Deskripsi": def.description,
+        "PIC": def.pic,
+        "Heavy Repair": def.heavyRepair,
+        "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
+      }))
+    );
 
-    const worksheet = XLSX.utils.json_to_sheet(flatData);
+    // Buat workbook Excel
     const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(flatData);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
+    
+    // Export ke file
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
     XLSX.writeFile(workbook, `Defect_Report_${dateString}.xlsx`);
 
-    // Tampilkan konfirmasi setelah export selesai
-    const shouldReset = confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?");
-    if (shouldReset) {
-      resetForm();
-    }
+    // Tampilkan konfirmasi setelah export benar-benar selesai
+    setTimeout(() => {
+      const shouldReset = confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?");
+      if (shouldReset) {
+        resetForm();
+      }
+    }, 500);
+
   } catch (error) {
-    console.error("Error exporting data: ", error);
-    alert("Gagal mengekspor data!");
+    console.error("Error exporting data:", error);
+    alert("Gagal mengekspor data: " + error.message);
+  } finally {
+    // Kembalikan tombol ke state semula
+    exportBtn.innerHTML = originalText;
+    exportBtn.disabled = false;
   }
 }
 
-// Fungsi untuk mereset form
+// Fungsi Reset Form yang lebih robust
 function resetForm() {
-  document.getElementById("vinForm").reset();
-  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-  defectList.innerHTML = "";
-  addDefectEntry();
-  editingId = null;
+  try {
+    // Reset form utama
+    document.getElementById("vinForm").reset();
+    
+    // Set tanggal ke hari ini
+    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+    
+    // Kosongkan dan tambahkan defect entry baru
+    defectList.innerHTML = "";
+    addDefectEntry();
+    
+    // Reset editing state
+    editingId = null;
+    
+    // Set focus ke field VIN
+    document.getElementById("vin").focus();
+    
+    // Scroll ke atas halaman
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+  } catch (resetError) {
+    console.error("Error resetting form:", resetError);
+    alert("Gagal mereset form. Silakan refresh halaman.");
+  }
 }
 
 // Fungsi Render Pareto Chart
