@@ -1,7 +1,23 @@
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBS6uwZXhh2nVMaVtiyxDnI93VbbhjDoy0",
+  authDomain: "datadefectd29d-a8b38.firebaseapp.com",
+  databaseURL: "https://datadefectd29d-a8b38-default-rtdb.firebaseio.com",
+  projectId: "datadefectd29d-a8b38",
+  storageBucket: "datadefectd29d-a8b38.firebasestorage.app",
+  messagingSenderId: "713752004677",
+  appId: "1:713752004677:web:2e819fe45b63d7ae50fb2c"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 // Data Storage
-let vinData = JSON.parse(localStorage.getItem("vinData")) || [];
-let editingIndex = null;
+let vinData = [];
+let editingId = null;
 const defectList = document.getElementById("defectList");
+const vinCollection = db.collection("vinData");
 
 // DOM Elements
 const addDefectBtn = document.getElementById("addDefectBtn");
@@ -11,10 +27,19 @@ const vinForm = document.getElementById("vinForm");
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-Chart.register(ChartDataLabels);
+  // Register Chart plugins
+  if (typeof Chart !== 'undefined' && Chart.register) {
+    Chart.register(ChartDataLabels);
+  }
+  
+  // Set default date
   document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+  
+  // Add first defect entry
   addDefectEntry();
-  saveAndRender();
+  
+  // Set up real-time listener
+  setupRealtimeListener();
   
   // Event Listeners
   addDefectBtn.addEventListener('click', addDefectEntry);
@@ -22,6 +47,21 @@ Chart.register(ChartDataLabels);
   exportBtn.addEventListener('click', exportToExcel);
   vinForm.addEventListener('submit', handleFormSubmit);
 });
+
+// Real-time listener function
+function setupRealtimeListener() {
+  vinCollection.orderBy("date", "desc").onSnapshot((snapshot) => {
+    vinData = [];
+    snapshot.forEach(doc => {
+      vinData.push({ id: doc.id, ...doc.data() });
+    });
+    renderTable();
+    renderChart();
+    renderParetoChart(vinData);
+  }, (error) => {
+    console.error("Error listening to data changes: ", error);
+  });
+}
 
 // Fungsi Tambah Defect
 function addDefectEntry(defect = {}) {
@@ -93,7 +133,7 @@ function addDefectEntry(defect = {}) {
 }
 
 // Fungsi Zero Defect
-function saveZeroDefect() {
+async function saveZeroDefect() {
   const date = document.getElementById("vinDate").value;
   const vin = document.getElementById("vin").value;
   
@@ -112,22 +152,27 @@ function saveZeroDefect() {
       pic: "N/A",
       heavyRepair: "Tidak"
     }],
-    isZeroDefect: true
+    isZeroDefect: true,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
   };
   
-  if (editingIndex !== null) {
-    vinData[editingIndex] = newEntry;
-    editingIndex = null;
-  } else {
-    vinData.push(newEntry);
+  try {
+    if (editingId !== null) {
+      await vinCollection.doc(editingId).update(newEntry);
+      editingId = null;
+    } else {
+      await vinCollection.add(newEntry);
+    }
+    
+    document.getElementById("vinForm").reset();
+    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+    defectList.innerHTML = "";
+    
+    alert("Data Zero Defect berhasil disimpan!");
+  } catch (error) {
+    console.error("Error saving zero defect: ", error);
+    alert("Gagal menyimpan data Zero Defect!");
   }
-  
-  document.getElementById("vinForm").reset();
-  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-  defectList.innerHTML = "";
-  saveAndRender();
-  
-  alert("Data Zero Defect berhasil disimpan!");
 }
 
 // Fungsi Render Tabel
@@ -135,7 +180,7 @@ function renderTable() {
   const tbody = document.querySelector("#vinTable tbody");
   tbody.innerHTML = "";
   
-  vinData.forEach((entry, index) => {
+  vinData.forEach((entry) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${entry.date}</td>
@@ -155,10 +200,10 @@ function renderTable() {
       </td>
       <td>
         <div class="action-buttons">
-          <button data-index="${index}" class="btn-primary edit-btn">
+          <button data-id="${entry.id}" class="btn-primary edit-btn">
             <i class="fas fa-edit"></i> Edit
           </button>
-          <button data-index="${index}" class="btn-danger delete-btn">
+          <button data-id="${entry.id}" class="btn-danger delete-btn">
             <i class="fas fa-trash"></i> Hapus
           </button>
         </div>
@@ -170,20 +215,22 @@ function renderTable() {
   // Add event listeners for edit/delete buttons
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      editVIN(parseInt(this.getAttribute('data-index')));
+      editVIN(this.getAttribute('data-id'));
     });
   });
 
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      deleteVIN(parseInt(this.getAttribute('data-index')));
+      deleteVIN(this.getAttribute('data-id'));
     });
   });
 }
 
 // Fungsi Edit Data
-function editVIN(index) {
-  const entry = vinData[index];
+function editVIN(id) {
+  const entry = vinData.find(item => item.id === id);
+  if (!entry) return;
+  
   document.getElementById("vinDate").value = entry.date;
   document.getElementById("vin").value = entry.vin;
   defectList.innerHTML = "";
@@ -194,28 +241,24 @@ function editVIN(index) {
     entry.defects.forEach(addDefectEntry);
   }
   
-  editingIndex = index;
+  editingId = id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Fungsi Hapus Data
-function deleteVIN(index) {
+async function deleteVIN(id) {
   if (confirm("Yakin ingin menghapus data ini?")) {
-    vinData.splice(index, 1);
-    saveAndRender();
+    try {
+      await vinCollection.doc(id).delete();
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      alert("Gagal menghapus data!");
+    }
   }
 }
 
-// Fungsi Simpan ke LocalStorage
-function saveAndRender() {
-  localStorage.setItem("vinData", JSON.stringify(vinData));
-vinData = JSON.parse(localStorage.getItem("vinData"));
-  renderTable();
-  renderChart();
-  renderParetoChart(vinData);
-}
-
 // Fungsi Handle Form Submit
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
   e.preventDefault();
   
   const date = document.getElementById("vinDate").value;
@@ -241,29 +284,38 @@ function handleFormSubmit(e) {
     return;
   }
   
-  const newEntry = { date, vin, defects, isZeroDefect: false };
+  const newEntry = { 
+    date, 
+    vin, 
+    defects, 
+    isZeroDefect: false,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
   
-  if (editingIndex !== null) {
-    vinData[editingIndex] = newEntry;
-    editingIndex = null;
-  } else {
-    vinData.push(newEntry);
+  try {
+    if (editingId !== null) {
+      await vinCollection.doc(editingId).update(newEntry);
+      editingId = null;
+    } else {
+      await vinCollection.add(newEntry);
+    }
+    
+    vinForm.reset();
+    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+    defectList.innerHTML = "";
+    addDefectEntry();
+  } catch (error) {
+    console.error("Error saving data: ", error);
+    alert("Gagal menyimpan data!");
   }
-  
-  this.reset();
-  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-  defectList.innerHTML = "";
-  addDefectEntry();
-  saveAndRender();
 }
 
-// Fungsi Render Chart
-// Fungsi untuk konfigurasi chart portrait (seperti sebelumnya)
+// Fungsi untuk konfigurasi chart
 function configureChartOptions(title) {
   const isMobile = window.innerWidth <= 768;
   
   return {
-    indexAxis: 'x', // Orientasi vertikal
+    indexAxis: 'x',
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -317,21 +369,23 @@ function configureChartOptions(title) {
   };
 }
 
-// Update fungsi renderChart()
+// Fungsi Render Chart
 function renderChart() {
   const filteredData = vinData.filter(entry => !entry.isZeroDefect);
 
+  // Destroy existing charts if they exist
   if (window.areaChart instanceof Chart) window.areaChart.destroy();
   if (window.categoryChart instanceof Chart) window.categoryChart.destroy();
   if (window.picChart instanceof Chart) window.picChart.destroy();
 
-  // Chart Area (Portrait)
+  // Chart Area
   const areaCounts = {};
   filteredData.forEach(v => v.defects.forEach(d => {
     if (d.area && d.area !== "N/A") areaCounts[d.area] = (areaCounts[d.area] || 0) + 1;
   }));
   
-  window.areaChart = new Chart(document.getElementById("defectChart"), {
+  const areaCtx = document.getElementById("defectChart").getContext('2d');
+  window.areaChart = new Chart(areaCtx, {
     type: "bar",
     data: {
       labels: Object.keys(areaCounts),
@@ -349,13 +403,14 @@ function renderChart() {
     options: configureChartOptions('Defect per Area'),
   });
 
-  // Chart Kategori (Portrait)
+  // Chart Kategori
   const categoryCounts = {};
   filteredData.forEach(v => v.defects.forEach(d => {
     if (d.category && d.category !== "Zero Defect") categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
   }));
   
-  window.categoryChart = new Chart(document.getElementById("categoryBarChart"), {
+  const categoryCtx = document.getElementById("categoryBarChart").getContext('2d');
+  window.categoryChart = new Chart(categoryCtx, {
     type: "bar",
     data: {
       labels: Object.keys(categoryCounts),
@@ -373,13 +428,14 @@ function renderChart() {
     options: configureChartOptions('Defect per Kategori')
   });
 
-  // Chart PIC (Portrait)
+  // Chart PIC
   const picCounts = {};
   filteredData.forEach(v => v.defects.forEach(d => {
     if (d.pic && d.pic !== "N/A") picCounts[d.pic] = (picCounts[d.pic] || 0) + 1;
   }));
   
-  window.picChart = new Chart(document.getElementById("picBarChart"), {
+  const picCtx = document.getElementById("picBarChart").getContext('2d');
+  window.picChart = new Chart(picCtx, {
     type: "bar",
     data: {
       labels: Object.keys(picCounts),
@@ -424,20 +480,18 @@ function exportToExcel() {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
   XLSX.writeFile(workbook, `Defect_Report_${dateString}.xlsx`);
 
-      // Tanyakan konfirmasi sebelum reset data
-      setTimeout(() => {
-        if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
-          vinData = [];
-          localStorage.setItem("vinData", JSON.stringify(vinData));
-          document.getElementById("vinForm").reset();
-          document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-          defectList.innerHTML = "";
-          addDefectEntry();
-          saveAndRender();
-        }
-      }, 500);
+  // Tanyakan konfirmasi sebelum reset data
+  setTimeout(() => {
+    if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
+      document.getElementById("vinForm").reset();
+      document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+      defectList.innerHTML = "";
+      addDefectEntry();
     }
-    
+  }, 500);
+}
+
+// Fungsi Render Pareto Chart
 function renderParetoChart(dataList) {
   const filtered = dataList.filter(entry => !entry.isZeroDefect);
   const combinedCounts = {};
@@ -457,11 +511,8 @@ function renderParetoChart(dataList) {
 
   const labels = sorted.map(e => e[0]);
   const counts = sorted.map(e => e[1]);
-  const cumCounts = counts.map((val, i) => counts.slice(0, i + 1).reduce((a, b) => a + b));
-  const total = cumCounts[cumCounts.length - 1];
-  const cumPercent = cumCounts.map(v => (v / total * 100).toFixed(1));
 
-   if (window.paretoChart instanceof Chart) {
+  if (window.paretoChart instanceof Chart) {
     window.paretoChart.destroy();
   }
 
@@ -485,7 +536,7 @@ function renderParetoChart(dataList) {
         legend: {display: false}
       },
       scales: {
-       y: {
+        y: {
           beginAtZero: true,
           grid: {
             display: false
