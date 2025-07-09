@@ -340,7 +340,7 @@ function configureChartOptions(title) {
         formatter: (value) => value,
         font: {
           weight: 'bold',
-          size: isMobile ? 20
+          size: isMobile ? 18 : 20
         },
         color: '#333'
       }
