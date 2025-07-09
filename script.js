@@ -23,7 +23,6 @@ const vinCollection = db.collection("vinData");
 const addDefectBtn = document.getElementById("addDefectBtn");
 const zeroDefectBtn = document.getElementById("zeroDefectBtn");
 const exportBtn = document.getElementById("exportBtn");
-const resetBtn = document.getElementById("resetBtn");
 const vinForm = document.getElementById("vinForm");
 
 // Initialize
@@ -43,13 +42,48 @@ document.addEventListener('DOMContentLoaded', function() {
   setupRealtimeListener();
   
   // Event Listeners
+  document.addEventListener('DOMContentLoaded', function() {
   addDefectBtn.addEventListener('click', addDefectEntry);
   zeroDefectBtn.addEventListener('click', saveZeroDefect);
   exportBtn.addEventListener('click', exportToExcel);
- document.getElementById("resetBtn").addEventListener("click", confirmResetForm);
   vinForm.addEventListener('submit', handleFormSubmit);
+  document.getElementById("deleteAllBtn").addEventListener('click', confirmDeleteAll);
 });
 
+// Fungsi untuk menghapus semua data
+async function deleteAllData() {
+  try {
+    // Dapatkan semua dokumen
+    const snapshot = await vinCollection.get();
+    
+    // Buat batch untuk menghapus semua dokumen sekaligus
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // Eksekusi batch
+    await batch.commit();
+    
+    alert("Semua data berhasil dihapus!");
+  } catch (error) {
+    console.error("Error deleting all documents: ", error);
+    alert("Gagal menghapus semua data!");
+  }
+}
+
+// Fungsi konfirmasi sebelum menghapus semua data
+function confirmDeleteAll() {
+  if (vinData.length === 0) {
+    alert("Tidak ada data untuk dihapus!");
+    return;
+  }
+  
+  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?\n\nTindakan ini tidak dapat dibatalkan dan semua data akan hilang permanen.")) {
+    deleteAllData();
+  }
+}
+  
 // Real-time listener function
 function setupRealtimeListener() {
   vinCollection.orderBy("date", "desc").onSnapshot((snapshot) => {
@@ -310,22 +344,6 @@ async function handleFormSubmit(e) {
     console.error("Error saving data: ", error);
     alert("Gagal menyimpan data!");
   }
-}
-
-// Fungsi Konfirmasi dan Reset Form (Confirmation and Reset Form Function)
-function confirmResetForm() {
-  if (confirm("Are you sure you want to reset the form? All unsaved data will be lost.")) {
-    resetForm();
-  }
-}
-
-// Fungsi Reset Form (Reset Form Function)
-function resetForm() {
-  document.getElementById("vinForm").reset(); // Use the built-in form reset method
-  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0]; // Set default date
-  defectList.innerHTML = ""; // Clear dynamically added defect entries
-  addDefectEntry(); // Add the initial defect entry back
-  editingId = null; // Reset editing state
 }
 
 // Fungsi untuk konfigurasi chart
