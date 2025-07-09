@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
   addDefectBtn.addEventListener('click', addDefectEntry);
   zeroDefectBtn.addEventListener('click', saveZeroDefect);
   exportBtn.addEventListener('click', exportToExcel);
-  resetBtn.addEventListener('click', resetForm);
+ document.getElementById("resetBtn").addEventListener("click", confirmResetForm);
   vinForm.addEventListener('submit', handleFormSubmit);
 });
 
