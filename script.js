@@ -24,9 +24,11 @@ const addDefectBtn = document.getElementById("addDefectBtn");
 const zeroDefectBtn = document.getElementById("zeroDefectBtn");
 const exportBtn = document.getElementById("exportBtn");
 const vinForm = document.getElementById("vinForm");
+const deleteAllBtn = document.getElementById("deleteAllBtn");
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+  
   // Register Chart plugins
   if (typeof Chart !== 'undefined' && Chart.register) {
     Chart.register(ChartDataLabels);
@@ -47,43 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
   zeroDefectBtn.addEventListener('click', saveZeroDefect);
   exportBtn.addEventListener('click', exportToExcel);
   vinForm.addEventListener('submit', handleFormSubmit);
-  document.getElementById("deleteAllBtn").addEventListener('click', confirmDeleteAll);
+  deleteAllBtn.addEventListener('click', confirmDeleteAll);
 });
 
-// Fungsi untuk menghapus semua data
-async function deleteAllData() {
-  try {
-    // Dapatkan semua dokumen
-    const snapshot = await vinCollection.get();
-    
-    // Buat batch untuk menghapus semua dokumen sekaligus
-    const batch = db.batch();
-    snapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-    
-    // Eksekusi batch
-    await batch.commit();
-    
-    alert("Semua data berhasil dihapus!");
-  } catch (error) {
-    console.error("Error deleting all documents: ", error);
-    alert("Gagal menghapus semua data!");
-  }
-}
-
-// Fungsi konfirmasi sebelum menghapus semua data
-function confirmDeleteAll() {
-  if (vinData.length === 0) {
-    alert("Tidak ada data untuk dihapus!");
-    return;
-  }
-  
-  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?\n\nTindakan ini tidak dapat dibatalkan dan semua data akan hilang permanen.")) {
-    deleteAllData();
-  }
-}
-  
 // Real-time listener function
 function setupRealtimeListener() {
   vinCollection.orderBy("date", "desc").onSnapshot((snapshot) => {
@@ -595,4 +563,33 @@ function renderParetoChart(dataList) {
       }
     }
   });
+}
+
+  async function deleteAllData() {
+  try {
+    const snapshot = await vinCollection.get();
+    const batch = db.batch();
+    
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+    alert("Semua data berhasil dihapus!");
+  } catch (error) {
+    console.error("Error deleting all documents: ", error);
+    alert("Gagal menghapus semua data!");
+  }
+}
+
+// Fungsi konfirmasi sebelum menghapus semua data
+function confirmDeleteAll() {
+  if (vinData.length === 0) {
+    alert("Tidak ada data untuk dihapus!");
+    return;
+  }
+  
+  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?")) {
+    deleteAllData();
+  }
 }
