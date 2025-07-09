@@ -23,7 +23,6 @@ const vinCollection = db.collection("vinData");
 const addDefectBtn = document.getElementById("addDefectBtn");
 const zeroDefectBtn = document.getElementById("zeroDefectBtn");
 const exportBtn = document.getElementById("exportBtn");
-const resetBtn = document.getElementById("resetBtn");
 const deleteAllBtn = document.getElementById("deleteAllBtn");
 const vinForm = document.getElementById("vinForm");
 
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
   addDefectBtn.addEventListener('click', addDefectEntry);
   zeroDefectBtn.addEventListener('click', saveZeroDefect);
   exportBtn.addEventListener('click', exportToExcel);
-  resetBtn.addEventListener('click', confirmResetForm);
   deleteAllBtn.addEventListener('click', confirmDeleteAll);
   vinForm.addEventListener('submit', handleFormSubmit);
 });
