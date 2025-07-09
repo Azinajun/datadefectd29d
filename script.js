@@ -593,3 +593,4 @@ function confirmDeleteAll() {
     deleteAllData();
   }
 }
+}
