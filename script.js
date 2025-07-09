@@ -81,25 +81,66 @@ function addDefectEntry(defect = {}) {
     <label>Area Defect:</label>
     <select class="area" required>
       <option value="">-- Pilih Area --</option>
+      <option ${defect.area === 'Engine hood outer Rh' ? 'selected' : ''}>Engine hood outer Rh</option>
+      <option ${defect.area === 'Engine hood inner Rh' ? 'selected' : ''}>Engine hood inner Rh</option>
+      <option ${defect.area === 'Engine front Rh' ? 'selected' : ''}>Engine front Rh</option>
+      <option ${defect.area === 'Fr bumper Rh' ? 'selected' : ''}>Fr bumper Rh</option>
+      <option ${defect.area === 'Fr tire Rh' ? 'selected' : ''}>Fr tire Rh</option>
+      <option ${defect.area === 'Fender Rh' ? 'selected' : ''}>Fender Rh</option>
+      <option ${defect.area === 'Fr pillar Rh' ? 'selected' : ''}>Fr pillar Rh</option>
+      <option ${defect.area === 'Windshield Rh' ? 'selected' : ''}>Windshield Rh</option>
       <option ${defect.area === 'Fr door outer Rh' ? 'selected' : ''}>Fr door outer Rh</option>
-      <option ${defect.area === 'Fr door inner & opening Rh' ? 'selected' : ''}>Fr door inner & opening Rh</option>
-      <option ${defect.area === 'Rr door outer Rh' ? 'selected' : ''}>Rr door outer Rh</option>
-      <option ${defect.area === 'Rr door inner & opening Rh' ? 'selected' : ''}>Rr door inner & opening Rh</option>
-      <option ${defect.area === 'Fr door outer Lh' ? 'selected' : ''}>Fr door outer Lh</option>
-      <option ${defect.area === 'Fr door inner & opening Lh' ? 'selected' : ''}>Fr door inner & opening Lh</option>
-      <option ${defect.area === 'Rr door outer Lh' ? 'selected' : ''}>Rr door outer Lh</option>
-      <option ${defect.area === 'Rr door inner & opening Lh' ? 'selected' : ''}>Rr door inner & opening Lh</option>
+      <option ${defect.area === 'Fr door inner Rh' ? 'selected' : ''}>Fr door inner Rh</option>
+      <option ${defect.area === 'Fr door opening Rh' ? 'selected' : ''}>Fr door opening Rh</option>
+      <option ${defect.area === 'Instrumen panel Rh' ? 'selected' : ''}>Instrumen panel Rh</option>
+      <option ${defect.area === 'Fr floor Rh' ? 'selected' : ''}>Fr floor Rh</option>
       <option ${defect.area === 'Engine room Rh' ? 'selected' : ''}>Engine room Rh</option>
+      <option ${defect.area === 'Fr seat Rh' ? 'selected' : ''}>Fr seat Rh</option>
+      <option ${defect.area === 'Fr Headlining Rh' ? 'selected' : ''}>Fr Headlining Rh</option>
+      <option ${defect.area === 'Rr door outer Rh' ? 'selected' : ''}>Rr door outer Rh</option>
+      <option ${defect.area === 'Rr door inner Rh' ? 'selected' : ''}>Rr door inner Rh</option>
+      <option ${defect.area === 'Rr door opening Rh' ? 'selected' : ''}>Rr door opening Rh</option>
+      <option ${defect.area === 'Rr floor Rh' ? 'selected' : ''}>Rr floor Rh</option>
+      <option ${defect.area === 'Rr seat Rh' ? 'selected' : ''}>Rr seat Rh</option>
+      <option ${defect.area === 'Rr Headlining Rh' ? 'selected' : ''}>Rr Headlining Rh</option>
+      <option ${defect.area === 'Quarter outer Rh' ? 'selected' : ''}>Quarter outer Rh</option>
+      <option ${defect.area === 'Quarter inner Rh' ? 'selected' : ''}>Quarter inner Rh</option>
+      <option ${defect.area === 'Rr tire Rh' ? 'selected' : ''}>Rr tire Rh</option>
+      <option ${defect.area === 'Rr bumper Rh' ? 'selected' : ''}>Rr bumper Rh</option>
+      <option ${defect.area === 'Back door outer Rh' ? 'selected' : ''}>Back door outer Rh</option>
+      <option ${defect.area === 'Back door inner Rh' ? 'selected' : ''}>Back door inner Rh</option>
+      <option ${defect.area === 'Back door opening Rh' ? 'selected' : ''}>Back door opening Rh</option>
+      <option ${defect.area === 'Roof Rh' ? 'selected' : ''}>Roof Rh</option>
+            <option ${defect.area === 'Engine hood outer Lh' ? 'selected' : ''}>Engine hood outer Lh</option>
+      <option ${defect.area === 'Engine hood inner Lh' ? 'selected' : ''}>Engine hood inner Lh</option>
+      <option ${defect.area === 'Engine front Lh' ? 'selected' : ''}>Engine front Lh</option>
+      <option ${defect.area === 'Fr bumper Lh' ? 'selected' : ''}>Fr bumper Lh</option>
+      <option ${defect.area === 'Fr tire Lh' ? 'selected' : ''}>Fr tire Lh</option>
+      <option ${defect.area === 'Fender Lh' ? 'selected' : ''}>Fender Lh</option>
+      <option ${defect.area === 'Fr pillar Lh' ? 'selected' : ''}>Fr pillar Lh</option>
+      <option ${defect.area === 'Windshield Lh' ? 'selected' : ''}>Windshield Lh</option>
+      <option ${defect.area === 'Fr door outer Lh' ? 'selected' : ''}>Fr door outer Lh</option>
+      <option ${defect.area === 'Fr door inner Lh' ? 'selected' : ''}>Fr door inner Lh</option>
+      <option ${defect.area === 'Fr door opening Lh' ? 'selected' : ''}>Fr door opening Lh</option>
+      <option ${defect.area === 'Instrumen panel Lh' ? 'selected' : ''}>Instrumen panel Lh</option>
+      <option ${defect.area === 'Fr floor Lh' ? 'selected' : ''}>Fr floor Lh</option>
       <option ${defect.area === 'Engine room Lh' ? 'selected' : ''}>Engine room Lh</option>
-      <option ${defect.area === 'Engine front' ? 'selected' : ''}>Engine front</option>
-      <option ${defect.area === 'Engine hood outer' ? 'selected' : ''}>Engine hood outer</option>
-      <option ${defect.area === 'Engine hood inner' ? 'selected' : ''}>Engine hood inner</option>
-      <option ${defect.area === 'Back door outer' ? 'selected' : ''}>Back door outer</option>
-      <option ${defect.area === 'Back door inner & opening' ? 'selected' : ''}>Back door inner & opening</option>
-      <option ${defect.area === 'Inner cabin Rh' ? 'selected' : ''}>Inner cabin Rh</option>
-      <option ${defect.area === 'Inner cabin Lh' ? 'selected' : ''}>Inner cabin Lh</option>
-      <option ${defect.area === 'Roof' ? 'selected' : ''}>Roof</option>
-      <option ${defect.area === 'Fuel lid inner & opening' ? 'selected' : ''}>Fuel lid inner & opening</option>
+      <option ${defect.area === 'Fr seat Lh' ? 'selected' : ''}>Fr seat Lh</option>
+      <option ${defect.area === 'Fr Headlining Lh' ? 'selected' : ''}>Fr Headlining Lh</option>
+      <option ${defect.area === 'Rr door outer Lh' ? 'selected' : ''}>Rr door outer Lh</option>
+      <option ${defect.area === 'Rr door inner Lh' ? 'selected' : ''}>Rr door inner Lh</option>
+      <option ${defect.area === 'Rr door opening Lh' ? 'selected' : ''}>Rr door opening Lh</option>
+      <option ${defect.area === 'Rr floor Lh' ? 'selected' : ''}>Rr floor Lh</option>
+      <option ${defect.area === 'Rr seat Lh' ? 'selected' : ''}>Rr seat Lh</option>
+      <option ${defect.area === 'Rr Headlining Lh' ? 'selected' : ''}>Rr Headlining Lh</option>
+      <option ${defect.area === 'Quarter outer Lh' ? 'selected' : ''}>Quarter outer Lh</option>
+      <option ${defect.area === 'Quarter inner Lh' ? 'selected' : ''}>Quarter inner Lh</option>
+      <option ${defect.area === 'Rr tire Lh' ? 'selected' : ''}>Rr tire Lh</option>
+      <option ${defect.area === 'Rr bumper Lh' ? 'selected' : ''}>Rr bumper Lh</option>
+      <option ${defect.area === 'Back door outer Lh' ? 'selected' : ''}>Back door outer Rh</option>
+      <option ${defect.area === 'Back door inner Lh' ? 'selected' : ''}>Back door inner Lh</option>
+      <option ${defect.area === 'Back door opening Lh' ? 'selected' : ''}>Back door opening Lh</option>
+      <option ${defect.area === 'Roof Lh' ? 'selected' : ''}>Roof Lh</option>
       <option ${defect.area === 'Under Body' ? 'selected' : ''}>Under Body</option>
     </select>
 
