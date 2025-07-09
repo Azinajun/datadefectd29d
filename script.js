@@ -312,6 +312,22 @@ async function handleFormSubmit(e) {
   }
 }
 
+// Fungsi Konfirmasi dan Reset Form (Confirmation and Reset Form Function)
+function confirmResetForm() {
+  if (confirm("Are you sure you want to reset the form? All unsaved data will be lost.")) {
+    resetForm();
+  }
+}
+
+// Fungsi Reset Form (Reset Form Function)
+function resetForm() {
+  document.getElementById("vinForm").reset(); // Use the built-in form reset method
+  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0]; // Set default date
+  defectList.innerHTML = ""; // Clear dynamically added defect entries
+  addDefectEntry(); // Add the initial defect entry back
+  editingId = null; // Reset editing state
+}
+
 // Fungsi untuk konfigurasi chart
 function configureChartOptions(title) {
   const isMobile = window.innerWidth <= 768;
@@ -561,53 +577,4 @@ function renderParetoChart(dataList) {
       }
     }
   });
-}
-
-// GANTIKAN JUGA FUNGSI INI
-function resetForm() {
-  try {
-    console.log("Memulai resetForm...");
-    
-    const form = document.getElementById("vinForm");
-    const dateInput = document.getElementById("vinDate");
-    const vinInput = document.getElementById("vin");
-    const defectListContainer = document.getElementById("defectList");
-
-    console.log("Mer-reset form elemen...");
-    form.reset();
-
-    console.log("Mengatur tanggal hari ini...");
-    const today = new Date().toISOString().split("T")[0];
-    dateInput.value = today;
-    console.log("Tanggal diatur ke:", today);
-
-    console.log("Mengosongkan daftar defect...");
-    defectListContainer.innerHTML = "";
-    console.log("Daftar defect seharusnya sudah kosong sekarang.");
-
-    console.log("Menambahkan satu defect entry baru...");
-    addDefectEntry();
-
-    console.log("Mer-reset editingId...");
-    editingId = null;
-
-    console.log("Memberi fokus pada input VIN...");
-    vinInput.focus();
-    
-    console.log("Fungsi resetForm SELESAI dijalankan.");
-
-  } catch (error) {
-    console.error("Error TERJADI saat reset form:", error);
-    alert("Gagal mereset form. Silakan refresh halaman.");
-  }
-}
-// GANTIKAN FUNGSI LAMA ANDA DENGAN YANG INI
-function confirmResetForm() {
-  console.log("Tombol Reset diklik. Memunculkan konfirmasi...");
-  if (confirm("Apakah Anda yakin ingin mereset form?")) {
-    console.log("Pengguna mengklik OK. Menjalankan resetForm()...");
-    resetForm();
-  } else {
-    console.log("Pengguna mengklik Batal.");
-  }
 }
