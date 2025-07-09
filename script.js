@@ -1,54 +1,52 @@
 // Initialize Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBS6uwZXhh2nVMaVtiyxDnI93VbbhjDoy0",
-  authDomain: "datadefectd29d-a8b38.firebaseapp.com",
-  databaseURL: "https://datadefectd29d-a8b38-default-rtdb.firebaseio.com",
-  projectId: "datadefectd29d-a8b38",
-  storageBucket: "datadefectd29d-a8b38.firebasestorage.app",
-  messagingSenderId: "713752004677",
-  appId: "1:713752004677:web:2e819fe45b63d7ae50fb2c"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Data Storage
+// Global Variables
 let vinData = [];
 let editingId = null;
-const defectList = document.getElementById("defectList");
 const vinCollection = db.collection("vinData");
 
 // DOM Elements
-const addDefectBtn = document.getElementById("addDefectBtn");
-const zeroDefectBtn = document.getElementById("zeroDefectBtn");
-const exportBtn = document.getElementById("exportBtn");
+const defectList = document.getElementById("defectList");
 const vinForm = document.getElementById("vinForm");
 
-// Initialize
+// Initialize Application
 document.addEventListener('DOMContentLoaded', function() {
-  // Register Chart plugins
-  if (typeof Chart !== 'undefined' && Chart.register) {
-    Chart.register(ChartDataLabels);
-  }
-  
   // Set default date
   document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
   
   // Add first defect entry
   addDefectEntry();
   
-  // Set up real-time listener
+  // Setup real-time listener
   setupRealtimeListener();
   
   // Event Listeners
-  addDefectBtn.addEventListener('click', addDefectEntry);
-  zeroDefectBtn.addEventListener('click', saveZeroDefect);
-  exportBtn.addEventListener('click', exportToExcel);
+  document.getElementById("addDefectBtn").addEventListener('click', addDefectEntry);
+  document.getElementById("zeroDefectBtn").addEventListener('click', saveZeroDefect);
+  document.getElementById("exportBtn").addEventListener('click', exportToExcel);
+  document.getElementById("resetBtn").addEventListener('click', confirmResetForm);
   vinForm.addEventListener('submit', handleFormSubmit);
+  
+  // Initialize charts
+  if (typeof Chart !== 'undefined') {
+    Chart.register(ChartDataLabels);
+  }
 });
 
-// Real-time listener function
+// ====================== CORE FUNCTIONS ====================== //
+
 function setupRealtimeListener() {
   vinCollection.orderBy("date", "desc").onSnapshot((snapshot) => {
     vinData = [];
@@ -59,11 +57,10 @@ function setupRealtimeListener() {
     renderChart();
     renderParetoChart(vinData);
   }, (error) => {
-    console.error("Error listening to data changes: ", error);
+    console.error("Error in real-time listener:", error);
   });
 }
 
-// Fungsi Tambah Defect
 function addDefectEntry(defect = {}) {
   const div = document.createElement("div");
   div.className = "defect-entry";
@@ -132,7 +129,87 @@ function addDefectEntry(defect = {}) {
   defectList.appendChild(div);
 }
 
-// Fungsi Zero Defect
+// ====================== FORM MANAGEMENT ====================== //
+
+async function handleFormSubmit(e) {
+  e.preventDefault();
+  
+  const date = document.getElementById("vinDate").value;
+  const vin = document.getElementById("vin").value;
+  const defects = [];
+  
+  document.querySelectorAll(".defect-entry").forEach(div => {
+    const defect = {
+      category: div.querySelector(".category").value,
+      area: div.querySelector(".area").value,
+      description: div.querySelector(".description").value,
+      pic: div.querySelector(".pic").value,
+      heavyRepair: div.querySelector(".heavy-repair").value
+    };
+    
+    if (defect.category && defect.area && defect.description && defect.pic) {
+      defects.push(defect);
+    }
+  });
+  
+  if (defects.length === 0) {
+    alert("Harap tambahkan minimal 1 defect!");
+    return;
+  }
+  
+  const newEntry = { 
+    date, 
+    vin, 
+    defects, 
+    isZeroDefect: false,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  
+  try {
+    if (editingId !== null) {
+      await vinCollection.doc(editingId).update(newEntry);
+      editingId = null;
+    } else {
+      await vinCollection.add(newEntry);
+    }
+    
+    resetForm();
+  } catch (error) {
+    console.error("Error saving data:", error);
+    alert("Gagal menyimpan data!");
+  }
+}
+
+function resetForm() {
+  // Reset form values
+  vinForm.reset();
+  
+  // Set current date
+  document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+  
+  // Clear defect list
+  defectList.innerHTML = "";
+  
+  // Add initial defect entry
+  addDefectEntry();
+  
+  // Reset editing state
+  editingId = null;
+  
+  // Focus on VIN field
+  document.getElementById("vin").focus();
+  
+  console.log("Form has been reset");
+}
+
+function confirmResetForm() {
+  if (confirm("Apakah Anda yakin ingin mereset form? Semua perubahan yang belum disimpan akan hilang.")) {
+    resetForm();
+  }
+}
+
+// ====================== DATA OPERATIONS ====================== //
+
 async function saveZeroDefect() {
   const date = document.getElementById("vinDate").value;
   const vin = document.getElementById("vin").value;
@@ -164,18 +241,45 @@ async function saveZeroDefect() {
       await vinCollection.add(newEntry);
     }
     
-    document.getElementById("vinForm").reset();
-    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-    defectList.innerHTML = "";
-    
+    resetForm();
     alert("Data Zero Defect berhasil disimpan!");
   } catch (error) {
-    console.error("Error saving zero defect: ", error);
+    console.error("Error saving zero defect:", error);
     alert("Gagal menyimpan data Zero Defect!");
   }
 }
 
-// Fungsi Render Tabel
+async function deleteVIN(id) {
+  if (confirm("Yakin ingin menghapus data ini?")) {
+    try {
+      await vinCollection.doc(id).delete();
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      alert("Gagal menghapus data!");
+    }
+  }
+}
+
+function editVIN(id) {
+  const entry = vinData.find(item => item.id === id);
+  if (!entry) return;
+  
+  document.getElementById("vinDate").value = entry.date;
+  document.getElementById("vin").value = entry.vin;
+  defectList.innerHTML = "";
+  
+  if (entry.isZeroDefect) {
+    saveZeroDefect();
+  } else {
+    entry.defects.forEach(addDefectEntry);
+  }
+  
+  editingId = id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ====================== DISPLAY FUNCTIONS ====================== //
+
 function renderTable() {
   const tbody = document.querySelector("#vinTable tbody");
   tbody.innerHTML = "";
@@ -226,91 +330,8 @@ function renderTable() {
   });
 }
 
-// Fungsi Edit Data
-function editVIN(id) {
-  const entry = vinData.find(item => item.id === id);
-  if (!entry) return;
-  
-  document.getElementById("vinDate").value = entry.date;
-  document.getElementById("vin").value = entry.vin;
-  defectList.innerHTML = "";
-  
-  if (entry.isZeroDefect) {
-    saveZeroDefect();
-  } else {
-    entry.defects.forEach(addDefectEntry);
-  }
-  
-  editingId = id;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+// ====================== CHART FUNCTIONS ====================== //
 
-// Fungsi Hapus Data
-async function deleteVIN(id) {
-  if (confirm("Yakin ingin menghapus data ini?")) {
-    try {
-      await vinCollection.doc(id).delete();
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-      alert("Gagal menghapus data!");
-    }
-  }
-}
-
-// Fungsi Handle Form Submit
-async function handleFormSubmit(e) {
-  e.preventDefault();
-  
-  const date = document.getElementById("vinDate").value;
-  const vin = document.getElementById("vin").value;
-  const defects = [];
-  
-  document.querySelectorAll(".defect-entry").forEach(div => {
-    const defect = {
-      category: div.querySelector(".category").value,
-      area: div.querySelector(".area").value,
-      description: div.querySelector(".description").value,
-      pic: div.querySelector(".pic").value,
-      heavyRepair: div.querySelector(".heavy-repair").value
-    };
-    
-    if (defect.category && defect.area && defect.description && defect.pic) {
-      defects.push(defect);
-    }
-  });
-  
-  if (defects.length === 0) {
-    alert("Harap tambahkan minimal 1 defect!");
-    return;
-  }
-  
-  const newEntry = { 
-    date, 
-    vin, 
-    defects, 
-    isZeroDefect: false,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  
-  try {
-    if (editingId !== null) {
-      await vinCollection.doc(editingId).update(newEntry);
-      editingId = null;
-    } else {
-      await vinCollection.add(newEntry);
-    }
-    
-    vinForm.reset();
-    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-    defectList.innerHTML = "";
-    addDefectEntry();
-  } catch (error) {
-    console.error("Error saving data: ", error);
-    alert("Gagal menyimpan data!");
-  }
-}
-
-// Fungsi untuk konfigurasi chart
 function configureChartOptions(title) {
   const isMobile = window.innerWidth <= 768;
   
@@ -369,7 +390,6 @@ function configureChartOptions(title) {
   };
 }
 
-// Fungsi Render Chart
 function renderChart() {
   const filteredData = vinData.filter(entry => !entry.isZeroDefect);
 
@@ -384,8 +404,7 @@ function renderChart() {
     if (d.area && d.area !== "N/A") areaCounts[d.area] = (areaCounts[d.area] || 0) + 1;
   }));
   
-  const areaCtx = document.getElementById("defectChart").getContext('2d');
-  window.areaChart = new Chart(areaCtx, {
+  window.areaChart = new Chart(document.getElementById("defectChart"), {
     type: "bar",
     data: {
       labels: Object.keys(areaCounts),
@@ -403,14 +422,13 @@ function renderChart() {
     options: configureChartOptions('Defect per Area'),
   });
 
-  // Chart Kategori
+  // Chart Category
   const categoryCounts = {};
   filteredData.forEach(v => v.defects.forEach(d => {
     if (d.category && d.category !== "Zero Defect") categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
   }));
   
-  const categoryCtx = document.getElementById("categoryBarChart").getContext('2d');
-  window.categoryChart = new Chart(categoryCtx, {
+  window.categoryChart = new Chart(document.getElementById("categoryBarChart"), {
     type: "bar",
     data: {
       labels: Object.keys(categoryCounts),
@@ -434,8 +452,7 @@ function renderChart() {
     if (d.pic && d.pic !== "N/A") picCounts[d.pic] = (picCounts[d.pic] || 0) + 1;
   }));
   
-  const picCtx = document.getElementById("picBarChart").getContext('2d');
-  window.picChart = new Chart(picCtx, {
+  window.picChart = new Chart(document.getElementById("picBarChart"), {
     type: "bar",
     data: {
       labels: Object.keys(picCounts),
@@ -454,84 +471,6 @@ function renderChart() {
   });
 }
 
-// Fungsi reset form yang komprehensif
-function resetForm() {
-  // Reset form utama
-  document.getElementById("vinForm").reset();
-  
-  // Set tanggal ke hari ini
-  const today = new Date();
-  document.getElementById("vinDate").value = today.toISOString().split("T")[0];
-  
-  // Kosongkan defect list
-  defectList.innerHTML = "";
-  
-  // Tambahkan defect entry baru
-  addDefectEntry();
-  
-  // Reset editing state
-  editingId = null;
-  
-  // Set focus ke field VIN
-  document.getElementById("vin").focus();
-  
-  // Scroll ke atas halaman
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-  console.log("Form telah direset");
-}
-
-// Event listener untuk tombol reset
-document.getElementById("resetBtn").addEventListener("click", function() {
-  if (confirm("Apakah Anda yakin ingin mereset form? Semua input yang belum disimpan akan hilang.")) {
-    resetForm();
-  }
-});
-
-// Modifikasi fungsi exportToExcel untuk hanya handle export saja
-async function exportToExcel() {
-  const exportBtn = document.getElementById("exportBtn");
-  const originalText = exportBtn.innerHTML;
-  
-  try {
-    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-    exportBtn.disabled = true;
-
-    const snapshot = await vinCollection.get();
-    const currentData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    const flatData = currentData.flatMap(item => 
-      item.defects.map(def => ({
-        "Tanggal": item.date,
-        "VIN": item.vin,
-        "Kategori": def.category,
-        "Area": def.area,
-        "Deskripsi": def.description,
-        "PIC": def.pic,
-        "Heavy Repair": def.heavyRepair,
-        "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
-      }))
-    );
-
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(flatData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
-    
-    const dateStr = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(workbook, `Defect_Report_${dateStr}.xlsx`);
-    
-    alert("Data berhasil di-export!");
-    
-  } catch (error) {
-    console.error("Export error:", error);
-    alert("Gagal mengekspor data: " + error.message);
-  } finally {
-    exportBtn.innerHTML = originalText;
-    exportBtn.disabled = false;
-  }
-}
-
-// Fungsi Render Pareto Chart
 function renderParetoChart(dataList) {
   const filtered = dataList.filter(entry => !entry.isZeroDefect);
   const combinedCounts = {};
@@ -593,4 +532,49 @@ function renderParetoChart(dataList) {
       }
     }
   });
+}
+
+// ====================== EXPORT FUNCTION ====================== //
+
+async function exportToExcel() {
+  const exportBtn = document.getElementById("exportBtn");
+  const originalText = exportBtn.innerHTML;
+  exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+  exportBtn.disabled = true;
+
+  try {
+    // Get fresh data from Firestore
+    const snapshot = await vinCollection.get();
+    const currentData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Prepare data for Excel
+    const flatData = currentData.flatMap(item => 
+      item.defects.map(def => ({
+        "Tanggal": item.date,
+        "VIN": item.vin,
+        "Kategori": def.category,
+        "Area": def.area,
+        "Deskripsi": def.description,
+        "PIC": def.pic,
+        "Heavy Repair": def.heavyRepair,
+        "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
+      }))
+    );
+
+    // Create Excel file
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(flatData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
+    
+    // Export file
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(workbook, `Defect_Report_${dateStr}.xlsx`);
+    
+  } catch (error) {
+    console.error("Export error:", error);
+    alert("Gagal mengekspor data: " + error.message);
+  } finally {
+    exportBtn.innerHTML = originalText;
+    exportBtn.disabled = false;
+  }
 }
