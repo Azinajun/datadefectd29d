@@ -43,9 +43,6 @@
           <button type="button" id="exportBtn" class="btn-excel">
             <i class="fas fa-file-excel"></i> Export ke Excel
           </button>
-           <button type="button" id="deleteAllBtn" class="btn-danger">
-          <i class="fas fa-trash-alt"></i> Reset Data
-          </button>
         </div>
       </form>
     </div>
@@ -53,6 +50,9 @@
     <div class="card animated">
       <div class="form-header">
         <h2>Data Defect</h2>
+        <button type="button" id="deleteAllBtn" class="btn-danger" style="margin-top: 10px;">
+      <i class="fas fa-trash-alt"></i> Hapus Semua Data
+    </button>
       </div>
       <div class="table-container">
         <table id="vinTable">
@@ -61,7 +61,7 @@
               <th>Tanggal</th>
               <th>VIN</th>
               <th>Data Defect</th>
-              <th>Action</th>
+              <th>Option</th>
             </tr>
           </thead>
           <tbody></tbody>
