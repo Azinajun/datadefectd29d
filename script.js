@@ -563,38 +563,51 @@ function renderParetoChart(dataList) {
   });
 }
 
-// Fungsi Reset Form yang Benar-Benar Membersihkan Tampilan
+// GANTIKAN JUGA FUNGSI INI
 function resetForm() {
   try {
-    // 1. Reset nilai form input
-    document.getElementById("vinForm").reset();
+    console.log("Memulai resetForm...");
     
-    // 2. Set tanggal ke hari ini
-    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-    
-    // 3. Kosongkan daftar defect
-    const defectList = document.getElementById("defectList");
-    defectList.innerHTML = "";
-    
-    // 4. Tambahkan satu defect entry kosong
+    const form = document.getElementById("vinForm");
+    const dateInput = document.getElementById("vinDate");
+    const vinInput = document.getElementById("vin");
+    const defectListContainer = document.getElementById("defectList");
+
+    console.log("Mer-reset form elemen...");
+    form.reset();
+
+    console.log("Mengatur tanggal hari ini...");
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.value = today;
+    console.log("Tanggal diatur ke:", today);
+
+    console.log("Mengosongkan daftar defect...");
+    defectListContainer.innerHTML = "";
+    console.log("Daftar defect seharusnya sudah kosong sekarang.");
+
+    console.log("Menambahkan satu defect entry baru...");
     addDefectEntry();
-    
-    // 5. Reset status editing
+
+    console.log("Mer-reset editingId...");
     editingId = null;
+
+    console.log("Memberi fokus pada input VIN...");
+    vinInput.focus();
     
-    // 6. Set focus ke field VIN
-    document.getElementById("vin").focus();
-    
-    console.log("Form telah direset - Input kosong siap untuk data baru");
+    console.log("Fungsi resetForm SELESAI dijalankan.");
+
   } catch (error) {
-    console.error("Error saat reset form:", error);
+    console.error("Error TERJADI saat reset form:", error);
     alert("Gagal mereset form. Silakan refresh halaman.");
   }
 }
-
-// Fungsi Confirm Reset yang Diperbarui
+// GANTIKAN FUNGSI LAMA ANDA DENGAN YANG INI
 function confirmResetForm() {
-  if (confirm("Apakah Anda yakin ingin mereset form?.")) {
+  console.log("Tombol Reset diklik. Memunculkan konfirmasi...");
+  if (confirm("Apakah Anda yakin ingin mereset form?")) {
+    console.log("Pengguna mengklik OK. Menjalankan resetForm()...");
     resetForm();
+  } else {
+    console.log("Pengguna mengklik Batal.");
   }
 }
