@@ -340,7 +340,7 @@ function configureChartOptions(title) {
         formatter: (value) => value,
         font: {
           weight: 'bold',
-          size: isMobile ? 10 : 12
+          size: isMobile ? 20
         },
         color: '#333'
       }
@@ -588,7 +588,7 @@ function confirmDeleteAll() {
     return;
   }
   
-  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?\n\nTindakan ini tidak dapat dibatalkan dan semua data akan hilang permanen.")) {
+  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?")) {
     deleteAllData();
   }
 }
