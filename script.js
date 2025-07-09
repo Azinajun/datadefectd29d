@@ -4,7 +4,7 @@ const firebaseConfig = {
   authDomain: "datadefectd29d-a8b38.firebaseapp.com",
   databaseURL: "https://datadefectd29d-a8b38-default-rtdb.firebaseio.com",
   projectId: "datadefectd29d-a8b38",
-  storageBucket: "datadefectd29d-a8b38.firebasestorage.app",
+  storageBucket: "datadefectd29d-a8b38.appspot.com",
   messagingSenderId: "713752004677",
   appId: "1:713752004677:web:2e819fe45b63d7ae50fb2c"
 };
@@ -23,12 +23,12 @@ const vinCollection = db.collection("vinData");
 const addDefectBtn = document.getElementById("addDefectBtn");
 const zeroDefectBtn = document.getElementById("zeroDefectBtn");
 const exportBtn = document.getElementById("exportBtn");
-const vinForm = document.getElementById("vinForm");
+const resetBtn = document.getElementById("resetBtn");
 const deleteAllBtn = document.getElementById("deleteAllBtn");
+const vinForm = document.getElementById("vinForm");
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-  
   // Register Chart plugins
   if (typeof Chart !== 'undefined' && Chart.register) {
     Chart.register(ChartDataLabels);
@@ -44,12 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
   setupRealtimeListener();
   
   // Event Listeners
-  document.addEventListener('DOMContentLoaded', function() {
   addDefectBtn.addEventListener('click', addDefectEntry);
   zeroDefectBtn.addEventListener('click', saveZeroDefect);
   exportBtn.addEventListener('click', exportToExcel);
-  vinForm.addEventListener('submit', handleFormSubmit);
+  resetBtn.addEventListener('click', confirmResetForm);
   deleteAllBtn.addEventListener('click', confirmDeleteAll);
+  vinForm.addEventListener('submit', handleFormSubmit);
 });
 
 // Real-time listener function
@@ -85,7 +85,7 @@ function addDefectEntry(defect = {}) {
       <option value="">-- Pilih Area --</option>
       <option ${defect.area === 'Fr door outer Rh' ? 'selected' : ''}>Fr door outer Rh</option>
       <option ${defect.area === 'Fr door inner & opening Rh' ? 'selected' : ''}>Fr door inner & opening Rh</option>
-      <option ${defect.area === 'Rr door outer Rh' ? 'selected' : ''}>Rr door outer right</option>
+      <option ${defect.area === 'Rr door outer Rh' ? 'selected' : ''}>Rr door outer Rh</option>
       <option ${defect.area === 'Rr door inner & opening Rh' ? 'selected' : ''}>Rr door inner & opening Rh</option>
       <option ${defect.area === 'Fr door outer Lh' ? 'selected' : ''}>Fr door outer Lh</option>
       <option ${defect.area === 'Fr door inner & opening Lh' ? 'selected' : ''}>Fr door inner & opening Lh</option>
@@ -458,7 +458,7 @@ function renderChart() {
   });
 }
 
-//fungsi exportToExcel
+// Fungsi Export ke Excel
 async function exportToExcel() {
   const exportBtn = document.getElementById("exportBtn");
   const originalText = exportBtn.innerHTML;
@@ -501,35 +501,6 @@ async function exportToExcel() {
   }
 }
 
-  async function deleteAllData() {
-  try {
-    const snapshot = await vinCollection.get();
-    const batch = db.batch();
-    
-    snapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-    
-    await batch.commit();
-    alert("Semua data berhasil dihapus!");
-  } catch (error) {
-    console.error("Error deleting all documents: ", error);
-    alert("Gagal menghapus semua data!");
-  }
-}
-
-// Fungsi konfirmasi sebelum menghapus semua data
-function confirmDeleteAll() {
-  if (vinData.length === 0) {
-    alert("Tidak ada data untuk dihapus!");
-    return;
-  }
-  
-  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?")) {
-    deleteAllData();
-  }
-}
-  
 // Fungsi Render Pareto Chart
 function renderParetoChart(dataList) {
   const filtered = dataList.filter(entry => !entry.isZeroDefect);
@@ -592,4 +563,34 @@ function renderParetoChart(dataList) {
       }
     }
   });
+}
+
+// Fungsi Hapus Semua Data
+async function deleteAllData() {
+  try {
+    const snapshot = await vinCollection.get();
+    const batch = db.batch();
+    
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+    alert("Semua data berhasil dihapus!");
+  } catch (error) {
+    console.error("Error deleting all documents: ", error);
+    alert("Gagal menghapus semua data!");
+  }
+}
+
+// Fungsi Konfirmasi Hapus Semua Data
+function confirmDeleteAll() {
+  if (vinData.length === 0) {
+    alert("Tidak ada data untuk dihapus!");
+    return;
+  }
+  
+  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?\n\nTindakan ini tidak dapat dibatalkan dan semua data akan hilang permanen.")) {
+    deleteAllData();
+  }
 }
