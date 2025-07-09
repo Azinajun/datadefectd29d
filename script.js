@@ -1,11 +1,12 @@
 // Initialize Firebase
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBS6uwZXhh2nVMaVtiyxDnI93VbbhjDoy0",
+  authDomain: "datadefectd29d-a8b38.firebaseapp.com",
+  databaseURL: "https://datadefectd29d-a8b38-default-rtdb.firebaseio.com",
+  projectId: "datadefectd29d-a8b38",
+  storageBucket: "datadefectd29d-a8b38.firebasestorage.app",
+  messagingSenderId: "713752004677",
+  appId: "1:713752004677:web:2e819fe45b63d7ae50fb2c"
 };
 
 // Initialize Firebase
