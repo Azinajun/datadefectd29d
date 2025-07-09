@@ -454,15 +454,20 @@ function renderChart() {
   });
 }
 
-// Fungsi Export Excel
-function exportToExcel() {
-  const today = new Date();
-  const dateString = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+//fungsi exportToExcel
+async function exportToExcel() {
+  const exportBtn = document.getElementById("exportBtn");
+  const originalText = exportBtn.innerHTML;
+  
+  try {
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+    exportBtn.disabled = true;
 
-  const flatData = [];
-  vinData.forEach(item => {
-    item.defects.forEach(def => {
-      flatData.push({
+    const snapshot = await vinCollection.get();
+    const currentData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const flatData = currentData.flatMap(item => 
+      item.defects.map(def => ({
         "Tanggal": item.date,
         "VIN": item.vin,
         "Kategori": def.category,
@@ -471,24 +476,25 @@ function exportToExcel() {
         "PIC": def.pic,
         "Heavy Repair": def.heavyRepair,
         "Status": item.isZeroDefect ? "Zero Defect" : "With Defect"
-      });
-    });
-  });
+      }))
+    );
 
-  const worksheet = XLSX.utils.json_to_sheet(flatData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
-  XLSX.writeFile(workbook, `Defect_Report_${dateString}.xlsx`);
-
-  // Tanyakan konfirmasi sebelum reset data
-  setTimeout(() => {
-    if (confirm("Data berhasil di-export! Apakah Anda ingin mereset form untuk input baru?")) {
-      document.getElementById("vinForm").reset();
-      document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
-      defectList.innerHTML = "";
-      addDefectEntry();
-    }
-  }, 500);
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(flatData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Defect Report");
+    
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(workbook, `Defect_Report_${dateStr}.xlsx`);
+    
+    alert("Data berhasil di-export!");
+    
+  } catch (error) {
+    console.error("Export error:", error);
+    alert("Gagal mengekspor data: " + error.message);
+  } finally {
+    exportBtn.innerHTML = originalText;
+    exportBtn.disabled = false;
+  }
 }
 
 // Fungsi Render Pareto Chart
