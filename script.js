@@ -501,6 +501,35 @@ async function exportToExcel() {
   }
 }
 
+  async function deleteAllData() {
+  try {
+    const snapshot = await vinCollection.get();
+    const batch = db.batch();
+    
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+    alert("Semua data berhasil dihapus!");
+  } catch (error) {
+    console.error("Error deleting all documents: ", error);
+    alert("Gagal menghapus semua data!");
+  }
+}
+
+// Fungsi konfirmasi sebelum menghapus semua data
+function confirmDeleteAll() {
+  if (vinData.length === 0) {
+    alert("Tidak ada data untuk dihapus!");
+    return;
+  }
+  
+  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?")) {
+    deleteAllData();
+  }
+}
+  
 // Fungsi Render Pareto Chart
 function renderParetoChart(dataList) {
   const filtered = dataList.filter(entry => !entry.isZeroDefect);
@@ -563,34 +592,4 @@ function renderParetoChart(dataList) {
       }
     }
   });
-}
-
-  async function deleteAllData() {
-  try {
-    const snapshot = await vinCollection.get();
-    const batch = db.batch();
-    
-    snapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-    
-    await batch.commit();
-    alert("Semua data berhasil dihapus!");
-  } catch (error) {
-    console.error("Error deleting all documents: ", error);
-    alert("Gagal menghapus semua data!");
-  }
-}
-
-// Fungsi konfirmasi sebelum menghapus semua data
-function confirmDeleteAll() {
-  if (vinData.length === 0) {
-    alert("Tidak ada data untuk dihapus!");
-    return;
-  }
-  
-  if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?")) {
-    deleteAllData();
-  }
-}
 }
