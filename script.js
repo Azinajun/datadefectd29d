@@ -23,6 +23,7 @@ const vinCollection = db.collection("vinData");
 const addDefectBtn = document.getElementById("addDefectBtn");
 const zeroDefectBtn = document.getElementById("zeroDefectBtn");
 const exportBtn = document.getElementById("exportBtn");
+const resetBtn = document.getElementById("resetBtn");
 const vinForm = document.getElementById("vinForm");
 
 // Initialize
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
   addDefectBtn.addEventListener('click', addDefectEntry);
   zeroDefectBtn.addEventListener('click', saveZeroDefect);
   exportBtn.addEventListener('click', exportToExcel);
+  resetBtn.addEventListener('click', resetForm);
   vinForm.addEventListener('submit', handleFormSubmit);
 });
 
@@ -559,4 +561,40 @@ function renderParetoChart(dataList) {
       }
     }
   });
+}
+
+// Fungsi Reset Form yang Benar-Benar Membersihkan Tampilan
+function resetForm() {
+  try {
+    // 1. Reset nilai form input
+    document.getElementById("vinForm").reset();
+    
+    // 2. Set tanggal ke hari ini
+    document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
+    
+    // 3. Kosongkan daftar defect
+    const defectList = document.getElementById("defectList");
+    defectList.innerHTML = "";
+    
+    // 4. Tambahkan satu defect entry kosong
+    addDefectEntry();
+    
+    // 5. Reset status editing
+    editingId = null;
+    
+    // 6. Set focus ke field VIN
+    document.getElementById("vin").focus();
+    
+    console.log("Form telah direset - Input kosong siap untuk data baru");
+  } catch (error) {
+    console.error("Error saat reset form:", error);
+    alert("Gagal mereset form. Silakan refresh halaman.");
+  }
+}
+
+// Fungsi Confirm Reset yang Diperbarui
+function confirmResetForm() {
+  if (confirm("Apakah Anda yakin ingin mereset form?.")) {
+    resetForm();
+  }
 }
