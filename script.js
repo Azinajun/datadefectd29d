@@ -86,6 +86,7 @@ function addDefectEntry(defect = {}) {
       <option ${defect.area === 'Engine front Rh' ? 'selected' : ''}>Engine front Rh</option>
       <option ${defect.area === 'Fr bumper Rh' ? 'selected' : ''}>Fr bumper Rh</option>
       <option ${defect.area === 'Fr tire Rh' ? 'selected' : ''}>Fr tire Rh</option>
+      <option ${defect.area === 'Fr wheel house Rh' ? 'selected' : ''}>Fr wheel house Rh</option>
       <option ${defect.area === 'Fender Rh' ? 'selected' : ''}>Fender Rh</option>
       <option ${defect.area === 'Fr pillar Rh' ? 'selected' : ''}>Fr pillar Rh</option>
       <option ${defect.area === 'Windshield Rh' ? 'selected' : ''}>Windshield Rh</option>
@@ -106,6 +107,7 @@ function addDefectEntry(defect = {}) {
       <option ${defect.area === 'Quarter outer Rh' ? 'selected' : ''}>Quarter outer Rh</option>
       <option ${defect.area === 'Quarter inner Rh' ? 'selected' : ''}>Quarter inner Rh</option>
       <option ${defect.area === 'Rr tire Rh' ? 'selected' : ''}>Rr tire Rh</option>
+      <option ${defect.area === 'Rr wheel house Rh' ? 'selected' : ''}>Rr wheel house Rh</option>
       <option ${defect.area === 'Rr bumper Rh' ? 'selected' : ''}>Rr bumper Rh</option>
       <option ${defect.area === 'Back door outer Rh' ? 'selected' : ''}>Back door outer Rh</option>
       <option ${defect.area === 'Back door inner Rh' ? 'selected' : ''}>Back door inner Rh</option>
@@ -116,6 +118,7 @@ function addDefectEntry(defect = {}) {
       <option ${defect.area === 'Engine front Lh' ? 'selected' : ''}>Engine front Lh</option>
       <option ${defect.area === 'Fr bumper Lh' ? 'selected' : ''}>Fr bumper Lh</option>
       <option ${defect.area === 'Fr tire Lh' ? 'selected' : ''}>Fr tire Lh</option>
+      <option ${defect.area === 'Fr wheel house Lh' ? 'selected' : ''}>Fr wheel house Lh</option>
       <option ${defect.area === 'Fender Lh' ? 'selected' : ''}>Fender Lh</option>
       <option ${defect.area === 'Fr pillar Lh' ? 'selected' : ''}>Fr pillar Lh</option>
       <option ${defect.area === 'Windshield Lh' ? 'selected' : ''}>Windshield Lh</option>
@@ -135,6 +138,7 @@ function addDefectEntry(defect = {}) {
       <option ${defect.area === 'Rr Headlining Lh' ? 'selected' : ''}>Rr Headlining Lh</option>
       <option ${defect.area === 'Quarter outer Lh' ? 'selected' : ''}>Quarter outer Lh</option>
       <option ${defect.area === 'Quarter inner Lh' ? 'selected' : ''}>Quarter inner Lh</option>
+      <option ${defect.area === 'Rr wheel house Lh' ? 'selected' : ''}>Rr wheel house Lh</option>
       <option ${defect.area === 'Rr tire Lh' ? 'selected' : ''}>Rr tire Lh</option>
       <option ${defect.area === 'Rr bumper Lh' ? 'selected' : ''}>Rr bumper Lh</option>
       <option ${defect.area === 'Back door outer Lh' ? 'selected' : ''}>Back door outer Rh</option>
