@@ -560,8 +560,7 @@ function renderParetoChart(dataList) {
   let sorted = Object.entries(combinedCounts)
     .filter(([_, count]) => count >= 2)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
-
+    
   const labels = sorted.map(e => e[0]);
   const counts = sorted.map(e => e[1]);
 
