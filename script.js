@@ -581,29 +581,8 @@ function renderParetoChart(dataList) {
         }
       ]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {display: false}
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            display: false
-          },
-          ticks: {
-            display: true
-          }
-        },
-        x: {
-          grid: {
-            display: false
-          }
-        }
-      }
-    }
+options: configureChartOptions('Pareto Defect')
+
   });
 }
 
