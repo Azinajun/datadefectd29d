@@ -660,4 +660,3 @@ auth.onAuthStateChanged(user => {
     document.getElementById("userEmail").innerText = user.email;
   }
 });
-}
