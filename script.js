@@ -615,3 +615,49 @@ function confirmDeleteAll() {
     deleteAllData();
   }
 }
+
+
+// Firebase Auth Integration
+const auth = firebase.auth();
+
+function login() {
+  const userID = document.getElementById("userID").value.trim();
+  const password = document.getElementById("userPassword").value;
+
+  if (userID !== "Auditd29d") {
+    alert("User ID tidak dikenali.");
+    return;
+  }
+
+  if (!password) {
+    alert("Password tidak boleh kosong");
+    return;
+  }
+
+  const email = "vehicleaudit7@gmail.com";
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Login berhasil!");
+    })
+    .catch(error => {
+      alert("Login gagal: " + error.message);
+    });
+}
+
+function logout() {
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user => {
+  const isLoggedIn = !!user;
+  document.querySelectorAll(".restricted").forEach(el => {
+    el.style.display = isLoggedIn ? "inline-flex" : "none";
+  });
+  document.getElementById("login-area").style.display = isLoggedIn ? "none" : "block";
+  document.getElementById("logout-area").style.display = isLoggedIn ? "block" : "none";
+  if (isLoggedIn) {
+    document.getElementById("userEmail").innerText = user.email;
+  }
+});
+}
