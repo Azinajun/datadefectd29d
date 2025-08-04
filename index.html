@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -14,8 +15,24 @@
       <h1>Data Defect Audit Unit D29D</h1>
     </div>
   </header>
-  
+
   <div class="container">
+    <div id="login-area" class="card animated">
+      <div class="form-header">
+        <h2>Login untuk Input Data</h2>
+      </div>
+      <input type="text" id="userID" placeholder="User ID (misal: Auditd29d)">
+      <input type="password" id="userPassword" placeholder="Password">
+      <button onclick="login()" class="btn-primary">Login</button>
+    </div>
+
+    <div id="logout-area" class="card animated" style="display:none;">
+      <div class="form-header">
+        <h2>Login sebagai <span id="userEmail"></span></h2>
+        <button onclick="logout()" class="btn-danger">Logout</button>
+      </div>
+    </div>
+
     <div class="card animated">
       <div class="form-header">
         <h2>Form Input Defect</h2>
@@ -31,13 +48,13 @@
         <div id="defectList"></div>
 
         <div class="form-actions">
-          <button type="button" id="addDefectBtn" class="btn-warning">
+          <button type="button" id="addDefectBtn" class="btn-warning restricted">
             <i class="fas fa-plus"></i> Tambah Defect
           </button>
-          <button type="button" id="zeroDefectBtn" class="btn-success">
+          <button type="button" id="zeroDefectBtn" class="btn-success restricted">
             <i class="fas fa-check-circle"></i> Zero Defect
           </button>
-          <button type="submit" class="btn-primary">
+          <button type="submit" class="btn-primary restricted">
             <i class="fas fa-save"></i> Simpan VIN
           </button>
           <button type="button" id="exportBtn" class="btn-excel">
@@ -50,9 +67,9 @@
     <div class="card animated">
       <div class="form-header">
         <h2>Data Defect</h2>
-        <button type="button" id="deleteAllBtn" class="btn-danger" style="margin-top: 10px;">
-      <i class="fas fa-trash-alt"></i> Hapus Semua Data
-    </button>
+        <button type="button" id="deleteAllBtn" class="btn-danger restricted" style="margin-top: 10px;">
+          <i class="fas fa-trash-alt"></i> Hapus Semua Data
+        </button>
       </div>
       <div class="table-container">
         <table id="vinTable">
@@ -88,16 +105,19 @@
         </div>
       </div>
     </div>
-<div class="pareto-chart-container">
-<div class="chart-box">
-  <h2>Pareto Defect</h2>
-  <canvas id="paretoChart"></canvas>
-</div>
+
+    <div class="pareto-chart-container">
+      <div class="chart-box">
+        <h2>Pareto Defect</h2>
+        <canvas id="paretoChart"></canvas>
+      </div>
+    </div>
   </div>
 
-  <!-- Script Eksternal -->
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase SDK & Plugin -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
