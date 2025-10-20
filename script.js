@@ -247,30 +247,34 @@ function renderTable() {
       </td>
       <td>
         <div class="action-buttons">
-          <button data-id="${entry.id}" class="btn-primary edit-btn">
-            <i class="fas fa-edit"></i> Edit
-          </button>
-          <button data-id="${entry.id}" class="btn-danger delete-btn">
-            <i class="fas fa-trash"></i> Hapus
-          </button>
+          ${isUserLoggedIn ? `
+            <button data-id="${entry.id}" class="btn-primary edit-btn">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button data-id="${entry.id}" class="btn-danger delete-btn">
+              <i class="fas fa-trash"></i> Hapus
+            </button>
+          ` : `<span style="color:gray;">Login untuk ubah</span>`}
         </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Add event listeners for edit/delete buttons
-  document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      editVIN(this.getAttribute('data-id'));
+  // Tambahkan event listener hanya jika login
+  if (isUserLoggedIn) {
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        editVIN(this.getAttribute('data-id'));
+      });
     });
-  });
 
-  document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      deleteVIN(this.getAttribute('data-id'));
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        deleteVIN(this.getAttribute('data-id'));
+      });
     });
-  });
+  }
 }
 
 // Fungsi Edit Data
@@ -649,14 +653,21 @@ function logout() {
   auth.signOut();
 }
 
+let isUserLoggedIn = false;
+
 auth.onAuthStateChanged(user => {
-  const isLoggedIn = !!user;
+  isUserLoggedIn = !!user;
+
   document.querySelectorAll(".restricted").forEach(el => {
-    el.style.display = isLoggedIn ? "inline-flex" : "none";
+    el.style.display = isUserLoggedIn ? "inline-flex" : "none";
   });
-  document.getElementById("login-area").style.display = isLoggedIn ? "none" : "block";
-  document.getElementById("logout-area").style.display = isLoggedIn ? "block" : "none";
-  if (isLoggedIn) {
-    document.getElementById("userEmail").innerText = user.email;
+
+  document.getElementById("login-area").style.display = isUserLoggedIn ? "none" : "block";
+  document.getElementById("logout-area").style.display = isUserLoggedIn ? "block" : "none";
+
+  if (isUserLoggedIn && user.email) {
+    const userEmail = document.getElementById("userEmail");
+    if (userEmail) userEmail.innerText = user.email;
   }
+  renderTable();
 });
