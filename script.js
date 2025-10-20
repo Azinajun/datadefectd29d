@@ -245,16 +245,16 @@ function renderTable() {
           </ul>`
         }
       </td>
- <td>
-  <div class="action-buttons">
-    <button data-id="${entry.id}" class="btn-primary edit-btn">
-      <i class="fas fa-edit"></i> Edit
-    </button>
-    <button data-id="${entry.id}" class="btn-danger delete-btn">
-      <i class="fas fa-trash"></i> Hapus
-    </button>
-  </div>
-</td>
+      <td>
+        <div class="action-buttons">
+          <button data-id="${entry.id}" class="btn-primary edit-btn">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button data-id="${entry.id}" class="btn-danger delete-btn">
+            <i class="fas fa-trash"></i> Hapus
+          </button>
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });
