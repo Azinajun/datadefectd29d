@@ -245,16 +245,20 @@ function renderTable() {
           </ul>`
         }
       </td>
-      <td>
-        <div class="action-buttons">
-          <button data-id="${entry.id}" class="btn-primary edit-btn">
-            <i class="fas fa-edit"></i> Edit
-          </button>
-          <button data-id="${entry.id}" class="btn-danger delete-btn">
-            <i class="fas fa-trash"></i> Hapus
-          </button>
-        </div>
-      </td>
+ <td>
+  ${currentUser ? `
+    <div class="action-buttons">
+      <button data-id="${entry.id}" class="btn-primary edit-btn">
+        <i class="fas fa-edit"></i> Edit
+      </button>
+      <button data-id="${entry.id}" class="btn-danger delete-btn">
+        <i class="fas fa-trash"></i> Hapus
+      </button>
+    </div>
+  ` : `
+    <span class="badge badge-success">View Only</span>
+  `}
+</td>
     `;
     tbody.appendChild(tr);
   });
