@@ -254,7 +254,7 @@ function renderTable() {
             <button data-id="${entry.id}" class="btn-danger delete-btn">
               <i class="fas fa-trash"></i> Hapus
             </button>
-          ` : `<span style="color:gray;">Login untuk ubah</span>`}
+          ` : `<span style="color:gray;">Login untuk edit</span>`}
         </div>
       </td>
     `;
