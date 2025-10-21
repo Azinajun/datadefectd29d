@@ -1,3 +1,35 @@
+// Guest & Login Mode Logic
+let isGuestMode = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const welcomePage = document.getElementById("welcome-page");
+  const dashboard = document.getElementById("dashboard");
+  const loginOption = document.getElementById("loginOption");
+  const guestOption = document.getElementById("guestOption");
+  const userStatus = document.getElementById("userStatus");
+
+  loginOption.addEventListener("click", () => {
+    welcomePage.style.display = "none";
+    dashboard.classList.remove("hidden");
+    document.getElementById("login-area").style.display = "block";
+    userStatus.innerText = "Mode: Login diperlukan";
+  });
+
+  guestOption.addEventListener("click", () => {
+    welcomePage.style.display = "none";
+    dashboard.classList.remove("hidden");
+    isGuestMode = true;
+    document.querySelectorAll(".restricted").forEach(el => el.style.display = "none");
+    document.getElementById("login-area").style.display = "none";
+    userStatus.innerText = "Mode: Guest";
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    location.reload();
+  });
+});
+
+
 // Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBS6uwZXhh2nVMaVtiyxDnI93VbbhjDoy0",
