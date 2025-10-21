@@ -1,125 +1,155 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pendataan Defect Unit D29D Audit</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
-  <header class="animated">
-    <div class="container">
-      <h1>Data Defect Audit Unit D29D</h1>
-    </div>
-  </header>
-
-  <div class="container">
-    <div id="login-area" class="card animated">
-      <div class="form-header">
-        <h2>Login untuk Input Data</h2>
-      </div>
-      <input type="text" id="userID" placeholder="User ID">
-      <input type="password" id="userPassword" placeholder="Password">
-      <button onclick="login()" class="btn-primary">Login</button>
-    </div>
-
-    <div id="logout-area" class="card animated" style="display:none;">
-      <div class="form-header">
-        <h2>Anda sudah Login</h2>
-        <button onclick="logout()" class="btn-danger">Logout</button>
+  <!-- Welcome Page -->
+  <section id="welcome-page" class="welcome-section">
+    <div class="welcome-content">
+      <img src="logo/logo.png" alt="Daihatsu Logo" class="welcome-logo" />
+      <h1 class="welcome-title">Pendataan Defect Unit D29D Audit</h1>
+      <p class="welcome-subtitle">Pilih mode akses Anda</p>
+      <div class="welcome-buttons">
+        <button id="loginOption" class="btn-primary"><i class="fas fa-user"></i> Login sebagai User</button>
+        <button id="guestOption" class="btn-light"><i class="fas fa-eye"></i> Masuk sebagai Guest</button>
       </div>
     </div>
+  </section>
 
-    <div class="card animated">
-      <div class="form-header">
-        <h2>Form Input Defect</h2>
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard-container hidden">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="logo/logo.png" alt="Daihatsu" class="sidebar-logo">
+        <h2>D29D Audit</h2>
       </div>
-      
-      <form id="vinForm">
-        <label for="vinDate">Tanggal:</label>
-        <input type="date" id="vinDate" required>
+      <nav class="sidebar-nav">
+        <ul>
+          <li><a href="#formSection"><i class="fas fa-clipboard-list"></i> Input Defect</a></li>
+          <li><a href="#dataSection"><i class="fas fa-table"></i> Data Defect</a></li>
+          <li><a href="#chartSection"><i class="fas fa-chart-bar"></i> Analisis</a></li>
+          <li><a href="#paretoSection"><i class="fas fa-chart-line"></i> Pareto</a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="btn-danger small-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
 
-        <label for="vin">VIN:</label>
-        <input type="text" id="vin" required placeholder="Masukkan VIN">
-
-        <div id="defectList"></div>
-
-        <div class="form-actions">
-          <button type="button" id="addDefectBtn" class="btn-warning restricted">
-            <i class="fas fa-plus"></i> Tambah Defect
-          </button>
-          <button type="button" id="zeroDefectBtn" class="btn-success restricted">
-            <i class="fas fa-check-circle"></i> Zero Defect
-          </button>
-          <button type="submit" class="btn-primary restricted">
-            <i class="fas fa-save"></i> Simpan VIN
-          </button>
-          <button type="button" id="exportBtn" class="btn-excel">
-            <i class="fas fa-file-excel"></i> Export ke Excel
-          </button>
+    <main class="main-content">
+      <header class="navbar">
+        <div class="navbar-left">
+          <h1>Audit Defect Dashboard</h1>
         </div>
-      </form>
-    </div>
-
-    <div class="card animated">
-      <div class="form-header">
-        <h2>Data Defect</h2>
-        <button type="button" id="deleteAllBtn" class="btn-danger restricted" style="margin-top: 10px;">
-          <i class="fas fa-trash-alt"></i> Hapus Semua Data
-        </button>
-      </div>
-      <div class="table-container">
-        <table id="vinTable">
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>VIN</th>
-              <th>Data Defect</th>
-              <th>Option</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="animated">
-      <div class="form-header">
-        <h2>Analisis Defect</h2>
-      </div>
-      <div class="chart-container">
-        <div class="chart-box">
-          <h2>Defect per Area</h2>
-          <canvas id="defectChart"></canvas>
+        <div class="navbar-right">
+          <span id="userStatus">Mode: Guest</span>
         </div>
-        <div class="chart-box">
-          <h2>Defect per Kategori</h2>
-          <canvas id="categoryBarChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h2>Defect per PIC</h2>
-          <canvas id="picBarChart"></canvas>
-        </div>
-      </div>
-    </div>
+      </header>
 
-    <div class="pareto-chart-container">
-      <div class="chart-box">
-        <h2>Pareto Defect</h2>
-        <canvas id="paretoChart"></canvas>
+      <div class="content-area">
+        <!-- Login Section -->
+        <div id="login-area" class="card animated" style="display:none;">
+          <div class="form-header"><h2>Login ke Sistem</h2></div>
+          <input type="text" id="userID" placeholder="User ID">
+          <input type="password" id="userPassword" placeholder="Password">
+          <button onclick="login()" class="btn-primary">Login</button>
+        </div>
+
+        <!-- Form Input Defect -->
+        <section id="formSection" class="card animated">
+          <div class="form-header">
+            <h2>Form Input Defect</h2>
+          </div>
+          <form id="vinForm">
+            <label for="vinDate">Tanggal:</label>
+            <input type="date" id="vinDate" required>
+            <label for="vin">VIN:</label>
+            <input type="text" id="vin" required placeholder="Masukkan VIN">
+            <div id="defectList"></div>
+            <div class="form-actions">
+              <button type="button" id="addDefectBtn" class="btn-warning restricted">
+                <i class="fas fa-plus"></i> Tambah Defect
+              </button>
+              <button type="button" id="zeroDefectBtn" class="btn-success restricted">
+                <i class="fas fa-check-circle"></i> Zero Defect
+              </button>
+              <button type="submit" class="btn-primary restricted">
+                <i class="fas fa-save"></i> Simpan VIN
+              </button>
+              <button type="button" id="exportBtn" class="btn-excel">
+                <i class="fas fa-file-excel"></i> Export ke Excel
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Data Defect -->
+        <section id="dataSection" class="card animated">
+          <div class="form-header">
+            <h2>Data Defect</h2>
+            <button type="button" id="deleteAllBtn" class="btn-danger restricted small-btn">
+              <i class="fas fa-trash-alt"></i> Hapus Semua Data
+            </button>
+          </div>
+          <div class="table-container">
+            <table id="vinTable">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>VIN</th>
+                  <th>Data Defect</th>
+                  <th>Option</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Chart Section -->
+        <section id="chartSection" class="card animated">
+          <div class="form-header"><h2>Analisis Defect</h2></div>
+          <div class="chart-container">
+            <div class="chart-box">
+              <h2>Defect per Area</h2>
+              <canvas id="defectChart"></canvas>
+            </div>
+            <div class="chart-box">
+              <h2>Defect per Kategori</h2>
+              <canvas id="categoryBarChart"></canvas>
+            </div>
+            <div class="chart-box">
+              <h2>Defect per PIC</h2>
+              <canvas id="picBarChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pareto -->
+        <section id="paretoSection" class="pareto-chart-container animated">
+          <div class="chart-box">
+            <h2>Pareto Defect</h2>
+            <canvas id="paretoChart"></canvas>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   </div>
 
-  <!-- Firebase SDK & Plugin -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
