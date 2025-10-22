@@ -9,106 +9,137 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <header class="animated">
+  <!-- Halaman Login -->
+  <div id="login-page" class="login-page">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <h1>Data Defect Audit Unit D29D</h1>
+          <p>Silakan pilih mode akses</p>
+        </div>
+        
+        <div class="login-options">
+          <div class="login-option-card" onclick="loginAsUser()">
+            <div class="login-icon">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <h3>Login sebagai User</h3>
+            <p>Full access - dapat menambah, edit, dan menghapus data</p>
+            <div class="login-form" id="user-login-form">
+              <input type="text" id="userID" placeholder="User ID" style="display: none;">
+              <input type="password" id="userPassword" placeholder="Password" style="display: none;">
+            </div>
+          </div>
+          
+          <div class="login-option-card" onclick="loginAsGuest()">
+            <div class="login-icon">
+              <i class="fas fa-eye"></i>
+            </div>
+            <h3>Masuk sebagai Guest</h3>
+            <p>View only - hanya dapat melihat dan mengekspor data</p>
+          </div>
+        </div>
+        
+        <div id="login-error" class="login-error" style="display: none;">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="error-message"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Halaman Utama (Awalnya Tersembunyi) -->
+  <div id="main-page" style="display: none;">
+    <header class="animated">
+      <div class="container">
+        <div class="header-content">
+          <h1>Data Defect Audit Unit D29D</h1>
+          <div class="user-info">
+            <span id="userRoleDisplay"></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
     <div class="container">
-      <h1>Data Defect Audit Unit D29D</h1>
-    </div>
-  </header>
+      <div class="card animated">
+        <div class="form-header">
+          <h2>Form Input Defect</h2>
+        </div>
+        
+        <form id="vinForm">
+          <label for="vinDate">Tanggal:</label>
+          <input type="date" id="vinDate" required>
 
-  <div class="container">
-    <div id="login-area" class="card animated">
-      <div class="form-header">
-        <h2>Login untuk Input Data</h2>
+          <label for="vin">VIN:</label>
+          <input type="text" id="vin" required placeholder="Masukkan VIN">
+
+          <div id="defectList"></div>
+
+          <div class="form-actions">
+            <button type="button" id="addDefectBtn" class="btn-warning restricted">
+              <i class="fas fa-plus"></i> Tambah Defect
+            </button>
+            <button type="button" id="zeroDefectBtn" class="btn-success restricted">
+              <i class="fas fa-check-circle"></i> Zero Defect
+            </button>
+            <button type="submit" class="btn-primary restricted">
+              <i class="fas fa-save"></i> Simpan VIN
+            </button>
+            <button type="button" id="exportBtn" class="btn-excel">
+              <i class="fas fa-file-excel"></i> Export ke Excel
+            </button>
+          </div>
+        </form>
       </div>
-      <input type="text" id="userID" placeholder="User ID">
-      <input type="password" id="userPassword" placeholder="Password">
-      <button onclick="login()" class="btn-primary">Login</button>
-    </div>
 
-    <div id="logout-area" class="card animated" style="display:none;">
-      <div class="form-header">
-        <h2>Anda sudah Login</h2>
-        <button onclick="logout()" class="btn-danger">Logout</button>
-      </div>
-    </div>
-
-    <div class="card animated">
-      <div class="form-header">
-        <h2>Form Input Defect</h2>
-      </div>
-      
-      <form id="vinForm">
-        <label for="vinDate">Tanggal:</label>
-        <input type="date" id="vinDate" required>
-
-        <label for="vin">VIN:</label>
-        <input type="text" id="vin" required placeholder="Masukkan VIN">
-
-        <div id="defectList"></div>
-
-        <div class="form-actions">
-          <button type="button" id="addDefectBtn" class="btn-warning restricted">
-            <i class="fas fa-plus"></i> Tambah Defect
-          </button>
-          <button type="button" id="zeroDefectBtn" class="btn-success restricted">
-            <i class="fas fa-check-circle"></i> Zero Defect
-          </button>
-          <button type="submit" class="btn-primary restricted">
-            <i class="fas fa-save"></i> Simpan VIN
-          </button>
-          <button type="button" id="exportBtn" class="btn-excel">
-            <i class="fas fa-file-excel"></i> Export ke Excel
+      <div class="card animated">
+        <div class="form-header">
+          <h2>Data Defect</h2>
+          <button type="button" id="deleteAllBtn" class="btn-danger restricted" style="margin-top: 10px;">
+            <i class="fas fa-trash-alt"></i> Hapus Semua Data
           </button>
         </div>
-      </form>
-    </div>
+        <div class="table-container">
+          <table id="vinTable">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>VIN</th>
+                <th>Data Defect</th>
+                <th>Option</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
 
-    <div class="card animated">
-      <div class="form-header">
-        <h2>Data Defect</h2>
-        <button type="button" id="deleteAllBtn" class="btn-danger restricted" style="margin-top: 10px;">
-          <i class="fas fa-trash-alt"></i> Hapus Semua Data
-        </button>
+      <div class="animated">
+        <div class="form-header">
+          <h2>Analisis Defect</h2>
+        </div>
+        <div class="chart-container">
+          <div class="chart-box">
+            <h2>Defect per Area</h2>
+            <canvas id="defectChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h2>Defect per Kategori</h2>
+            <canvas id="categoryBarChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h2>Defect per PIC</h2>
+            <canvas id="picBarChart"></canvas>
+          </div>
+        </div>
       </div>
-      <div class="table-container">
-        <table id="vinTable">
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>VIN</th>
-              <th>Data Defect</th>
-              <th>Option</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
 
-    <div class="animated">
-      <div class="form-header">
-        <h2>Analisis Defect</h2>
-      </div>
-      <div class="chart-container">
+      <div class="pareto-chart-container">
         <div class="chart-box">
-          <h2>Defect per Area</h2>
-          <canvas id="defectChart"></canvas>
+          <h2>Pareto Defect</h2>
+          <canvas id="paretoChart"></canvas>
         </div>
-        <div class="chart-box">
-          <h2>Defect per Kategori</h2>
-          <canvas id="categoryBarChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h2>Defect per PIC</h2>
-          <canvas id="picBarChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="pareto-chart-container">
-      <div class="chart-box">
-        <h2>Pareto Defect</h2>
-        <canvas id="paretoChart"></canvas>
       </div>
     </div>
   </div>
