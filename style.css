@@ -297,6 +297,192 @@ canvas {
   margin-bottom: 20px;
 }
 
+/* Login Page Styles */
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.login-header h1 {
+  color: var(--dark);
+  margin-bottom: 10px;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.login-header p {
+  color: var(--gray);
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.login-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.login-option-card {
+  background: var(--light);
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 30px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.login-option-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.login-option-card h3 {
+  color: var(--dark);
+  margin: 15px 0 10px;
+  font-size: 1.3rem;
+}
+
+.login-option-card p {
+  color: var(--gray);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.login-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+}
+
+.login-error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.login-error.info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* Header Styles */
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  text-align: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.user-role-badge {
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-role-badge.user {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--primary);
+}
+
+.user-role-badge.guest {
+  background: rgba(108, 117, 125, 0.1);
+  color: var(--gray);
+}
+
+/* Tombol Logout Base Style */
+.btn-logout {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  color: white;
+}
+
+/* Tombol Logout Merah untuk User */
+.btn-logout-red {
+  background-color: #f72585;
+}
+
+.btn-logout-red:hover {
+  background-color: #e5177b;
+  transform: translateY(-2px);
+}
+
+/* Tombol Kembali Hijau untuk Guest */
+.btn-logout-green {
+  background-color: #2ecc71;
+}
+
+.btn-logout-green:hover {
+  background-color: #27ae60;
+  transform: translateY(-2px);
+}
+
+.guest-message {
+  color: var(--gray);
+  font-style: italic;
+  font-size: 14px;
+}
+
 /* Mobile Styles */
 @media (max-width: 768px) {
   .container {
@@ -336,6 +522,27 @@ canvas {
   .action-buttons button {
     width: 100%;
   }
+
+  .login-card {
+    padding: 25px 20px;
+  }
+  
+  .login-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .login-option-card {
+    padding: 20px 15px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .user-info {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -358,8 +565,28 @@ canvas {
   .chart-box {
     height: 350px;
   }
-.pareto-chart-container {
+  
+  .pareto-chart-container {
     margin-top: 20px;
+  }
+
+  .login-page {
+    padding: 15px;
+  }
+  
+  .login-card {
+    padding: 20px 15px;
+  }
+  
+  .login-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 
