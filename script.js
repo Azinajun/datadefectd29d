@@ -12,27 +12,174 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Data Storage
 let vinData = [];
 let editingId = null;
-const defectList = document.getElementById("defectList");
-const vinCollection = db.collection("vinData");
+let currentUserRole = null;
+let appInitialized = false;
 
 // DOM Elements
+const loginPage = document.getElementById("login-page");
+const mainPage = document.getElementById("main-page");
+const userRoleDisplay = document.getElementById("userRoleDisplay");
+const defectList = document.getElementById("defectList");
+const vinCollection = db.collection("vinData");
 const addDefectBtn = document.getElementById("addDefectBtn");
 const zeroDefectBtn = document.getElementById("zeroDefectBtn");
 const exportBtn = document.getElementById("exportBtn");
 const deleteAllBtn = document.getElementById("deleteAllBtn");
 const vinForm = document.getElementById("vinForm");
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  // Register Chart plugins
-  if (typeof Chart !== 'undefined' && Chart.register) {
-    Chart.register(ChartDataLabels);
+// User Role Management Functions
+function loginAsUser() {
+  const userID = prompt("Masukkan User ID:");
+  if (!userID) return;
+  
+  if (userID !== "Auditd29d") {
+    showLoginError("User ID tidak dikenali.");
+    return;
   }
   
+  const password = prompt("Masukkan Password:");
+  if (!password) return;
+  
+  const email = "vehicleaudit7@gmail.com";
+  
+  // Show loading state
+  showLoginError("Sedang login...", "info");
+  
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      currentUserRole = 'user';
+      localStorage.setItem('userRole', 'user');
+      showMainPage();
+    })
+    .catch(error => {
+      showLoginError("Login gagal: " + error.message);
+    });
+}
+
+function loginAsGuest() {
+  currentUserRole = 'guest';
+  localStorage.setItem('userRole', 'guest');
+  showMainPage();
+}
+
+function showMainPage() {
+  loginPage.style.display = 'none';
+  mainPage.style.display = 'block';
+  
+  // Update UI berdasarkan role
+  updateUIForUserRole();
+  
+  // Initialize aplikasi
+  if (!appInitialized) {
+    initializeApp();
+    appInitialized = true;
+  }
+}
+
+function showLoginPage() {
+  mainPage.style.display = 'none';
+  loginPage.style.display = 'block';
+  currentUserRole = null;
+  
+  // Reset form login
+  document.getElementById("userID").value = "";
+  document.getElementById("userPassword").value = "";
+  document.getElementById("login-error").style.display = "none";
+
+  // Reset flag initialized
+  appInitialized = false;
+}
+
+function updateUIForUserRole() {
+  const restrictedElements = document.querySelectorAll('.restricted');
+  const userRoleText = currentUserRole === 'user' ? 'User' : 'Guest';
+  const buttonColorClass = currentUserRole === 'user' ? 'btn-logout-red' : 'btn-logout-green';
+  
+  userRoleDisplay.innerHTML = `
+    <span class="user-role-badge ${currentUserRole}">
+      <i class="fas ${currentUserRole === 'user' ? 'fa-user-shield' : 'fa-eye'}"></i>
+      ${userRoleText}
+    </span>
+    <button onclick="logout()" class="btn-logout ${buttonColorClass}">
+      <i class="fas ${currentUserRole === 'user' ? 'fa-sign-out-alt' : 'fa-arrow-left'}"></i>
+      ${currentUserRole === 'user' ? 'Logout' : 'Login'}
+    </button>
+  `;
+  
+  // Tampilkan/sembunyikan elemen berdasarkan role
+  restrictedElements.forEach(element => {
+    element.style.display = currentUserRole === 'user' ? 'inline-flex' : 'none';
+  });
+}
+
+function logout() {
+  if (currentUserRole === 'user') {
+    auth.signOut().then(() => {
+      console.log("User logged out successfully");
+    }).catch(error => {
+      console.error("Logout error:", error);
+    });
+  }
+
+  // Hapus dari localStorage
+  localStorage.removeItem('userRole'); 
+  
+  // Reset state
+  currentUserRole = null;
+  editingId = null;
+  appInitialized = false;
+
+  // Clear form data
+  document.getElementById("vinForm").reset();
+  defectList.innerHTML = "";
+  
+  // Kembali ke halaman login
+  showLoginPage();
+}
+
+function showLoginError(message, type = 'error') {
+  const errorDiv = document.getElementById("login-error");
+  const errorMessage = document.getElementById("error-message");
+  
+  errorMessage.textContent = message;
+  errorDiv.style.display = 'flex';
+  errorDiv.className = `login-error ${type}`;
+  
+  if (type !== 'info') {
+    setTimeout(() => {
+      errorDiv.style.display = 'none';
+    }, 5000);
+  }
+}
+
+// Fungsi untuk cek status login Firebase dan localStorage
+function checkAuthState() {
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      // User sudah login sebagai 'user'
+      currentUserRole = 'user';
+      localStorage.setItem('userRole', 'user'); // Simpan ke localStorage
+      showMainPage();
+    } else {
+      // Cek apakah ada guest role di localStorage
+      const savedRole = localStorage.getItem('userRole');
+      if (savedRole === 'guest') {
+        currentUserRole = 'guest';
+        showMainPage();
+      } else {
+        showLoginPage();
+      }
+    }
+  });
+}
+
+// Initialize aplikasi setelah login
+function initializeApp() {
   // Set default date
   document.getElementById("vinDate").value = new Date().toISOString().split("T")[0];
   
@@ -48,6 +195,16 @@ document.addEventListener('DOMContentLoaded', function() {
   exportBtn.addEventListener('click', exportToExcel);
   deleteAllBtn.addEventListener('click', confirmDeleteAll);
   vinForm.addEventListener('submit', handleFormSubmit);
+}
+
+// Initialize aplikasi saat pertama kali load
+document.addEventListener('DOMContentLoaded', function() {
+  // Register Chart plugins
+  if (typeof Chart !== 'undefined' && Chart.register) {
+    Chart.register(ChartDataLabels);
+  }
+  
+  checkAuthState();
 });
 
 // Real-time listener function
@@ -247,22 +404,22 @@ function renderTable() {
       </td>
       <td>
         <div class="action-buttons">
-          ${isUserLoggedIn ? `
+          ${currentUserRole === 'user' ? `
             <button data-id="${entry.id}" class="btn-primary edit-btn">
               <i class="fas fa-edit"></i> Edit
             </button>
             <button data-id="${entry.id}" class="btn-danger delete-btn">
               <i class="fas fa-trash"></i> Hapus
             </button>
-          ` : `<span style="color:gray;">Login untuk edit</span>`}
+          ` : `<span class="guest-message">Guest Mode</span>`}
         </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Tambahkan event listener hanya jika login
-  if (isUserLoggedIn) {
+  // Tambahkan event listener hanya untuk user
+  if (currentUserRole === 'user') {
     document.querySelectorAll('.edit-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         editVIN(this.getAttribute('data-id'));
@@ -619,55 +776,3 @@ function confirmDeleteAll() {
     deleteAllData();
   }
 }
-
-
-// Firebase Auth Integration
-const auth = firebase.auth();
-
-function login() {
-  const userID = document.getElementById("userID").value.trim();
-  const password = document.getElementById("userPassword").value;
-
-  if (userID !== "Auditd29d") {
-    alert("User ID tidak dikenali.");
-    return;
-  }
-
-  if (!password) {
-    alert("Password tidak boleh kosong");
-    return;
-  }
-
-  const email = "vehicleaudit7@gmail.com";
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      alert("Login berhasil!");
-    })
-    .catch(error => {
-      alert("Login gagal: " + error.message);
-    });
-}
-
-function logout() {
-  auth.signOut();
-}
-
-let isUserLoggedIn = false;
-
-auth.onAuthStateChanged(user => {
-  isUserLoggedIn = !!user;
-
-  document.querySelectorAll(".restricted").forEach(el => {
-    el.style.display = isUserLoggedIn ? "inline-flex" : "none";
-  });
-
-  document.getElementById("login-area").style.display = isUserLoggedIn ? "none" : "block";
-  document.getElementById("logout-area").style.display = isUserLoggedIn ? "block" : "none";
-
-  if (isUserLoggedIn && user.email) {
-    const userEmail = document.getElementById("userEmail");
-    if (userEmail) userEmail.innerText = user.email;
-  }
-  renderTable();
-});
