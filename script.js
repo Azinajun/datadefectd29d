@@ -97,6 +97,7 @@ function showLoginPage() {
 
 function updateUIForUserRole() {
   const restrictedElements = document.querySelectorAll('.restricted');
+  const restrictedForms = document.querySelectorAll('.restricted-form');
   const userRoleText = currentUserRole === 'user' ? 'User' : 'Guest';
   const buttonColorClass = currentUserRole === 'user' ? 'btn-logout-red' : 'btn-logout-green';
   
@@ -114,6 +115,15 @@ function updateUIForUserRole() {
   // Tampilkan/sembunyikan elemen berdasarkan role
   restrictedElements.forEach(element => {
     element.style.display = currentUserRole === 'user' ? 'inline-flex' : 'none';
+  });
+
+// Tampilkan/sembunyikan form input berdasarkan role
+  restrictedForms.forEach(form => {
+    if (currentUserRole === 'guest') {
+      form.style.display = 'none';
+    } else {
+      form.style.display = 'block';
+    }
   });
 }
 
@@ -188,6 +198,9 @@ function initializeApp() {
   
   // Set up real-time listener
   setupRealtimeListener();
+
+  // Hitung DPU awal
+  calculateDPU();
   
   // Event Listeners
   addDefectBtn.addEventListener('click', addDefectEntry);
@@ -209,16 +222,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Real-time listener function
 function setupRealtimeListener() {
-  vinCollection.orderBy("date", "desc").onSnapshot((snapshot) => {
+  // Gunakan sorting yang simple dulu untuk menghindari index error
+  vinCollection.orderBy("date", "asc").onSnapshot((snapshot) => {
     vinData = [];
     snapshot.forEach(doc => {
       vinData.push({ id: doc.id, ...doc.data() });
     });
+    
+    // Sort manually di frontend berdasarkan timestamp jika ada
+    vinData.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      
+      // Jika tanggal sama, bandingkan timestamp
+      if (dateA.getTime() === dateB.getTime()) {
+        const timeA = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+        const timeB = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+        return timeA - timeB;
+      }
+      
+      return dateA - dateB;
+    });
+    
     renderTable();
     renderChart();
     renderParetoChart(vinData);
+    calculateDPU();
   }, (error) => {
     console.error("Error listening to data changes: ", error);
+    
+    // Fallback: coba tanpa sorting jika error
+    if (error.code === 'failed-precondition') {
+      console.log('Trying without sorting...');
+      vinCollection.onSnapshot((snapshot) => {
+        vinData = [];
+        snapshot.forEach(doc => {
+          vinData.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Manual sort by date
+        vinData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        renderTable();
+        renderChart();
+        renderParetoChart(vinData);
+        calculateDPU();
+      });
+    }
   });
 }
 
@@ -384,9 +434,10 @@ function renderTable() {
   const tbody = document.querySelector("#vinTable tbody");
   tbody.innerHTML = "";
   
-  vinData.forEach((entry) => {
+  vinData.forEach((entry, index) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td>${index + 1}</td>
       <td>${entry.date}</td>
       <td>${entry.vin}</td>
       <td>
@@ -775,4 +826,59 @@ function confirmDeleteAll() {
   if (confirm("APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?")) {
     deleteAllData();
   }
+}
+
+// Fungsi menghitung DPU yang BENAR - termasuk zero defect units
+function calculateDPU() {
+  // Filter data yang BUKAN zero defect untuk hitung defects
+  const defectData = vinData.filter(entry => !entry.isZeroDefect);
+  
+  // Total units = SEMUA VIN (termasuk zero defect)
+  const allUniqueVINs = new Set(vinData.map(entry => entry.vin));
+  const totalUnits = allUniqueVINs.size;
+  
+  if (totalUnits === 0) {
+    // Reset semua DPU ke 0 jika tidak ada data sama sekali
+    document.getElementById('dpuOverall').textContent = '0.0';
+    document.getElementById('dpuFunction').textContent = '0.0';
+    document.getElementById('dpuBodyFitting').textContent = '0.0';
+    document.getElementById('dpuAppearance').textContent = '0.0';
+    return;
+  }
+  
+  // Hitung total defects dan defects per kategori
+  let totalDefects = 0;
+  let functionDefects = 0;
+  let bodyFittingDefects = 0;
+  let appearanceDefects = 0;
+  
+  defectData.forEach(entry => {
+    entry.defects.forEach(defect => {
+      totalDefects++;
+      
+      switch(defect.category) {
+        case 'Function':
+          functionDefects++;
+          break;
+        case 'Body Fitting':
+          bodyFittingDefects++;
+          break;
+        case 'Appearance':
+          appearanceDefects++;
+          break;
+      }
+    });
+  });
+  
+  // Hitung DPU - bagi dengan TOTAL SEMUA UNITS
+  const dpuOverall = totalDefects / totalUnits;
+  const dpuFunction = functionDefects / totalUnits;
+  const dpuBodyFitting = bodyFittingDefects / totalUnits;
+  const dpuAppearance = appearanceDefects / totalUnits;
+  
+  // Update DPU display
+  document.getElementById('dpuOverall').textContent = dpuOverall.toFixed(2);
+  document.getElementById('dpuFunction').textContent = dpuFunction.toFixed(2);
+  document.getElementById('dpuBodyFitting').textContent = dpuBodyFitting.toFixed(2);
+  document.getElementById('dpuAppearance').textContent = dpuAppearance.toFixed(2);
 }
