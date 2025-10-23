@@ -599,3 +599,90 @@ canvas {
 .animated {
   animation: fadeIn 0.4s ease-out forwards;
 }
+
+/* Hide form input untuk guest mode */
+.restricted-form {
+  transition: all 0.3s ease;
+}
+
+/* Optional: Tambahkan animasi smooth untuk hide/show */
+.form-hidden {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* DPU Container Styling */
+.dpu-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dpu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+  min-width: 80px;
+}
+
+.dpu-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.dpu-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+/* Specific colors untuk masing-masing kategori */
+.dpu-item:nth-child(1) { /* DPU Overall */
+  border-left-color: #f72585;
+}
+
+.dpu-item:nth-child(2) { /* DPU Function */
+  border-left-color: #4361ee;
+}
+
+.dpu-item:nth-child(3) { /* DPU Body Fitting */
+  border-left-color: #4cc9f0;
+}
+
+.dpu-item:nth-child(4) { /* DPU Appearance */
+  border-left-color: #f8961e;
+}
+
+/* Responsive Design untuk DPU */
+@media (max-width: 768px) {
+  .dpu-container {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  .dpu-item {
+    min-width: 70px;
+    padding: 6px 10px;
+  }
+  
+  .dpu-label {
+    font-size: 10px;
+  }
+  
+  .dpu-value {
+    font-size: 14px;
+  }
+}
