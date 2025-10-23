@@ -62,7 +62,7 @@
     </header>
 
     <div class="container">
-      <div class="card animated">
+      <div class="card animated restricted-form">
         <div class="form-header">
           <h2>Form Input Defect</h2>
         </div>
@@ -86,9 +86,6 @@
             <button type="submit" class="btn-primary restricted">
               <i class="fas fa-save"></i> Simpan VIN
             </button>
-            <button type="button" id="exportBtn" class="btn-excel">
-              <i class="fas fa-file-excel"></i> Export ke Excel
-            </button>
           </div>
         </form>
       </div>
@@ -99,11 +96,34 @@
           <button type="button" id="deleteAllBtn" class="btn-danger restricted" style="margin-top: 10px;">
             <i class="fas fa-trash-alt"></i> Hapus Semua Data
           </button>
+          <button type="button" id="exportBtn" class="btn-excel">
+        <i class="fas fa-file-excel"></i> Export ke Excel
+      </button>
         </div>
+      <!-- DPU Display -->
+      <div class="dpu-container">
+        <div class="dpu-item">
+          <span class="dpu-label">DPU Total</span>
+          <span class="dpu-value" id="dpuOverall">0.00</span>
+        </div>
+        <div class="dpu-item">
+          <span class="dpu-label">DPU Function</span>
+          <span class="dpu-value" id="dpuFunction">0.00</span>
+        </div>
+        <div class="dpu-item">
+          <span class="dpu-label">DPU Body Fitting</span>
+          <span class="dpu-value" id="dpuBodyFitting">0.00</span>
+        </div>
+        <div class="dpu-item">
+          <span class="dpu-label">DPU Appearance</span>
+          <span class="dpu-value" id="dpuAppearance">0.00</span>
+        </div>
+      </div>
         <div class="table-container">
           <table id="vinTable">
             <thead>
               <tr>
+                <th>No</th>
                 <th>Tanggal</th>
                 <th>VIN</th>
                 <th>Data Defect</th>
