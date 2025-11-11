@@ -19,6 +19,8 @@ let vinData = [];
 let editingId = null;
 let currentUserRole = null;
 let appInitialized = false;
+let currentPage = 1;
+const recordsPerPage = 10;
 
 // DOM Elements
 const loginPage = document.getElementById("login-page");
@@ -208,6 +210,18 @@ function initializeApp() {
   exportBtn.addEventListener('click', exportToExcel);
   deleteAllBtn.addEventListener('click', confirmDeleteAll);
   vinForm.addEventListener('submit', handleFormSubmit);
+document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  });
+  
+  document.getElementById('nextPage').addEventListener('click', () => {
+    const totalPages = Math.ceil(vinData.length / recordsPerPage);
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  });
 }
 
 // Initialize aplikasi saat pertama kali load
@@ -222,8 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Real-time listener function
 function setupRealtimeListener() {
-  // Gunakan sorting yang simple dulu untuk menghindari index error
-  vinCollection.orderBy("date", "asc").onSnapshot((snapshot) => {
+    vinCollection.orderBy("date", "asc").onSnapshot((snapshot) => {
     vinData = [];
     snapshot.forEach(doc => {
       vinData.push({ id: doc.id, ...doc.data() });
@@ -243,7 +256,7 @@ function setupRealtimeListener() {
       
       return dateA - dateB;
     });
-    
+    currentPage = 1;
     renderTable();
     renderChart();
     renderParetoChart(vinData);
@@ -429,15 +442,26 @@ async function saveZeroDefect() {
   }
 }
 
-// Fungsi Render Tabel
+// Fungsi Render Tabel - YANG DIMODIFIKASI
 function renderTable() {
   const tbody = document.querySelector("#vinTable tbody");
   tbody.innerHTML = "";
   
-  vinData.forEach((entry, index) => {
+  // 1. HITUNG PAGINATION
+  const totalRecords = vinData.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+  
+  // 2. AMBIL DATA UNTUK HALAMAN SAAT INI
+  const currentPageData = vinData.slice(startIndex, endIndex);
+  
+  // 3. RENDER DATA KE TABEL
+  currentPageData.forEach((entry, index) => {
+    const globalIndex = startIndex + index; // Index global (bukan per halaman)
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${index + 1}</td>
+      <td>${globalIndex + 1}</td>  <!-- Gunakan globalIndex + 1 -->
       <td>${entry.date}</td>
       <td>${entry.vin}</td>
       <td>
@@ -469,7 +493,13 @@ function renderTable() {
     tbody.appendChild(tr);
   });
 
-  // Tambahkan event listener hanya untuk user
+  // 4. UPDATE INFORMASI PAGINATION
+  updatePaginationInfo(totalRecords, startIndex, endIndex);
+  
+  // 5. UPDATE TOMBOL NAVIGASI
+  updatePaginationControls(totalPages);
+
+  // 6. TAMBAH EVENT LISTENER UNTUK TOMBOL EDIT/DELETE (hanya user)
   if (currentUserRole === 'user') {
     document.querySelectorAll('.edit-btn').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -483,6 +513,44 @@ function renderTable() {
       });
     });
   }
+}
+
+// FUNGSI BARU: Update informasi pagination
+function updatePaginationInfo(totalRecords, startIndex, endIndex) {
+  // Update teks: "Menampilkan 1-10 dari 50 VIN"
+  document.getElementById('currentPageStart').textContent = startIndex + 1;
+  document.getElementById('currentPageEnd').textContent = endIndex;
+  document.getElementById('totalRecords').textContent = totalRecords;
+  
+  // Update teks: "Halaman 1"
+  document.getElementById('currentPage').textContent = currentPage;
+}
+
+// FUNGSI BARU: Update status tombol navigasi
+function updatePaginationControls(totalPages) {
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  
+  // Non-aktifkan tombol Previous jika di halaman 1
+  prevBtn.disabled = currentPage === 1;
+  
+  // Non-aktifkan tombol Next jika di halaman terakhir atau tidak ada data
+  nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+}
+
+// FUNGSI BARU: Pindah ke halaman tertentu
+function goToPage(page) {
+  // Update halaman aktif
+  currentPage = page;
+  
+  // Render ulang tabel dengan data halaman baru
+  renderTable();
+  
+  // Scroll smooth ke tabel
+  window.scrollTo({ 
+    top: document.getElementById('vinTable').offsetTop - 100, 
+    behavior: 'smooth' 
+  });
 }
 
 // Fungsi Edit Data
