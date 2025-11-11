@@ -20,7 +20,7 @@ let editingId = null;
 let currentUserRole = null;
 let appInitialized = false;
 let currentPage = 1;
-const recordsPerPage = 10;
+const recordsPerPage = 5;
 
 // DOM Elements
 const loginPage = document.getElementById("login-page");
